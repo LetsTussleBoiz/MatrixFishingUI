@@ -1,0 +1,9 @@
+{
+  "Name": "ArgonMatrix Fishing UI",
+  "Author": "Script Kitty",
+  "Version": "0.1.0",
+  "Description": "In game menu for local fishing info and more!",
+  "UniqueID": "Borealis.MatrixFishingUI",
+  "EntryDll": "MatrixFishingUI.dll",
+  "MinimumApiVersion": "4.1.2"
+}
