@@ -12,16 +12,28 @@
       <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
       <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.3.2" />
       <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.2.0" />
+      <PackageReference Include="PropertyChanged.SourceGenerator" Version="1.1.1">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="assets\sprites\" />
+      <Folder Include="Framework\UI\" />
       <Folder Include="references\" />
     </ItemGroup>
 
     <ItemGroup>
       <None Remove="assets\views\ScrollingItemGrid.sml" />
       <Content Include="assets\views\ScrollingItemGrid.sml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="assets\views\TestView.sml" />
+      <Content Include="assets\views\TestView.sml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="assets\sprites\MenuTiles.json" />
+      <Content Include="assets\sprites\MenuTiles.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>

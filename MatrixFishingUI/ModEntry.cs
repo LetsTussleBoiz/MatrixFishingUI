@@ -10,17 +10,17 @@ namespace MatrixFishingUI
 {
     public class ModEntry : Mod
     {
-        public static ModConfig Config = null!;
-        public static IMonitor? _monitor;
+        private static ModConfig _config = null!;
+        private static IMonitor? _monitor;
         private readonly PerScreen<Lazy<GameLocation[]>> _locations = new(GetLocationsForCache);
-        private IViewEngine? _viewEngine;
+        public static IViewEngine? ViewEngine;
         internal static FishManager Fish = null!;
         
         public override void Entry(IModHelper helper)
         {
-            Config = helper.ReadConfig<ModConfig>();
+            _config = helper.ReadConfig<ModConfig>();
             _monitor = Monitor;
-            Monitor.Log($"Started with menu key {Config.OpenMenuKey}.");
+            Monitor.Log($"Started with menu key {_config.OpenMenuKey}.");
             Fish = new(this);
             I18n.Init(helper.Translation);
             
@@ -253,35 +253,24 @@ namespace MatrixFishingUI
         {
             ResetLocationCache();
         }
-
-        /// <summary>Raised after the player returns to the title screen.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
+        
         private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
         {
             ResetLocationCache();
         }
-
-        /// <summary>Raised after a game location is added or removed.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
+        
         private void OnLocationListChanged(object? sender, LocationListChangedEventArgs e)
         {
             ResetLocationCache();
         }
-
-        /// <summary>Raised after the player presses or releases any keys on the keyboard, controller, or mouse.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
+        
         private void OnButtonChanged(object? sender, ButtonsChangedEventArgs e)
         {
             // open menu
-            if (Config.OpenMenuKey.JustPressed())
+            if (_config.OpenMenuKey.JustPressed())
             {
                 if (!Context.IsPlayerFree || Game1.currentMinigame != null)
                 {
-                    // Players often ask for help due to the menu not opening when expected. To
-                    // simplify troubleshooting, log when the key is ignored.
                     if (Game1.currentMinigame != null)
                         Monitor.Log($"Received menu open key, but a '{Game1.currentMinigame.GetType().Name}' minigame is active.");
                     else if (Game1.eventUp)
@@ -296,14 +285,13 @@ namespace MatrixFishingUI
                 {
                     Monitor.Log("Received menu open key.");
                     var context = FishMenuData.GetFish();
-                    Game1.activeClickableMenu = _viewEngine?.CreateMenuFromAsset(
-                        "Mods/TestMod/Views/ScrollingItemGrid",
+                    Game1.activeClickableMenu = ViewEngine?.CreateMenuFromAsset(
+                        "Mods/Borealis.MatrixFishingUI/Views/ScrollingItemGrid",
                         context);
                 }
             }
         }
-
-        /// <summary>Raised after the game draws to the sprite patch in a draw tick, just before the final sprite batch is rendered to the screen.</summary>
+        
         private void OnRendered(object? sender, RenderedEventArgs e)
         {
             if (!Context.IsWorldReady)
@@ -336,9 +324,10 @@ namespace MatrixFishingUI
         /// <summary>Raised after game is launched.</summary>
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
         {
-            _viewEngine = Helper.ModRegistry.GetApi<IViewEngine>("focustense.StardewUI");
-            _viewEngine?.RegisterViews("Mods/TestMod/Views", "assets/views");
-            _viewEngine?.EnableHotReloading();
+            ViewEngine = Helper.ModRegistry.GetApi<IViewEngine>("focustense.StardewUI");
+            ViewEngine?.RegisterViews("Mods/Borealis.MatrixFishingUI/Views", "assets/views");
+            ViewEngine?.RegisterSprites("Mods/Borealis.MatrixFishingUI/Sprites", "assets/sprites");
+            ViewEngine?.EnableHotReloading();
             GenerateGMCM();
         }
         
@@ -359,7 +348,7 @@ namespace MatrixFishingUI
 
         public static void Log(string input)
         {
-            _monitor?.Log(input);
+            _monitor?.Log(input, LogLevel.Info);
         }
         
         public static void LogError(string input)
@@ -375,6 +364,11 @@ namespace MatrixFishingUI
         public static void LogWarn(string input)
         {
             _monitor?.Log(input, LogLevel.Warn);
+        }
+        
+        public static void LogTrace(string input)
+        {
+            _monitor?.Log(input);
         }
     }
 }

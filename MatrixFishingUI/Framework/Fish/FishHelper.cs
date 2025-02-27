@@ -221,7 +221,7 @@ public static class FishHelper {
 				result.Clear();
 				break;
 		}
-		ModEntry.Log("Calling override...");
+		ModEntry.LogTrace("Calling override...");
 		string ovr = farm.getMapProperty("FarmFishLocationOverride");
 		if (!string.IsNullOrEmpty(ovr)) {
 			string[] bits = ovr.Split(' ');
@@ -258,7 +258,7 @@ public static class FishHelper {
 		if (existing.TryGetValue(zone, out List<string>? result)) {
 			if (!result.Contains(fish)) {
 				result.Add(fish);
-				ModEntry.Log($"Added fish data entry for {fishName} (ID:{fish}, Zone:{zone})");
+				ModEntry.LogTrace($"Added fish data entry for {fishName} (ID:{fish}, Zone:{zone})");
 			}
 		} else
 			existing.Add(zone, new() { fish });
@@ -291,7 +291,7 @@ public static class FishHelper {
 			if (fish.StartsWith("(O)") && canAddFish(entries[i], season, data))
 				AddFish(fName, fish, zone, existing);
 		}
-		ModEntry.Log($"Added fish data for {name}, season {season}");
+		ModEntry.LogTrace($"Added fish data for {name}, season {season}");
 		return existing;
 	}
 	public static bool ContainsFish(LocationData loc) {
@@ -334,7 +334,7 @@ public static class FishHelper {
 	private static bool canAddFish(SpawnFishData fish, int season, LocationData data) {
 		if (fish.Season == null && fish.Condition == null) return true;
 		if (fish.Season != null) {
-			ModEntry.Log($"Season int: {season}, Season value {fish.Season}");
+			ModEntry.LogTrace($"Season int: {season}, Season value {fish.Season}");
 			switch (season) {
 				case 0: if (fish.Season == StardewValley.Season.Spring) return true; break;
 				case 1: if (fish.Season == StardewValley.Season.Summer) return true; break;

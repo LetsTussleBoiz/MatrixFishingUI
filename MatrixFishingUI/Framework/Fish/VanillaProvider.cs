@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using MatrixFishingUI.Framework.Enums;
 using MatrixFishingUI.Framework.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -61,13 +62,14 @@ public class VanillaProvider : IFishProvider {
 		int minSize;
 		int maxSize;
 
-		int[]? seasons = null;
+		LuluSeason[]? seasons;
 
 		TrapFishInfo? trap = null;
 		CatchFishInfo? caught = null;
-
+		FishType fishType;
 		if (bits[1].Equals("trap")) {
 			// Trap Fish
+			fishType = FishType.Trap;
 			WaterType type;
 			if (bits[4] == "freshwater")
 				type = WaterType.Freshwater;
@@ -81,11 +83,11 @@ public class VanillaProvider : IFishProvider {
 
 			trap = new(type);
 
-			seasons = new int[WorldDate.MonthsPerYear];
-			for (int i = 0; i < seasons.Length; i++)
-				seasons[i] = i;
-
-		} else {
+			seasons = new LuluSeason[1];
+			seasons[0] = LuluSeason.All;
+		} else
+		{
+			fishType = FishType.Catch;
 			if (bits.Length < 13)
 				return null;
 
@@ -126,22 +128,30 @@ public class VanillaProvider : IFishProvider {
 			);
 
 			string[] seasonIds = bits[6].Split(' ');
-			seasons = new int[seasonIds.Length];
-			for(int i = 0;i < seasonIds.Length;i++) {
-				string seasonId = seasonIds[i];
-				switch (seasonId) {
-					case "spring":
-						seasons[i] = 0;
-						break;
-					case "summer":
-						seasons[i] = 1;
-						break;
-					case "fall":
-						seasons[i] = 2;
-						break;
-					case "winter":
-						seasons[i] = 3;
-						break;
+			if (seasonIds.Length >= 4)
+			{
+				seasons = new LuluSeason[1];
+				seasons[0] = LuluSeason.All;
+			}
+			else
+			{
+				seasons = new LuluSeason[seasonIds.Length];
+				for(int i = 0;i < seasonIds.Length;i++) {
+					string seasonId = seasonIds[i];
+					switch (seasonId) {
+						case "spring":
+							seasons[i] = LuluSeason.Spring;
+							break;
+						case "summer":
+							seasons[i] = LuluSeason.Summer;
+							break;
+						case "fall":
+							seasons[i] = LuluSeason.Fall;
+							break;
+						case "winter":
+							seasons[i] = LuluSeason.Winter;
+							break;
+					}
 				}
 			}
 		}
@@ -191,75 +201,20 @@ public class VanillaProvider : IFishProvider {
 
 		bool legend = false;
 		legend = obj.HasContextTag("fish_legendary");
-		SpriteInfo? sprite = null;
-		//Hardcode in Goby sprite
-		if(id=="(O)Goby")
-			sprite = new SpriteInfo(Game1.objectSpriteSheet_2, new Microsoft.Xna.Framework.Rectangle(112, 256, 16, 16));
 		return new FishInfo(
 			Id: id, // bits[0],
 			Item: obj,
 			Name: obj.DisplayName,
 			Description: desc,
-			Sprite: sprite==null? GetSprite(obj): sprite,
+			Sprite: ItemRegistry.GetData(obj.ItemId).GetTexture(),
 			Legendary: legend,
 			MinSize: minSize,
 			MaxSize: maxSize,
-			NumberCaught: who => {
-				if (who.fishCaught.TryGetValue(id, out int[] caught) && caught.Length >= 2)
-					return caught[0];
-				return 0;
-			},
-			BiggestCatch: who => {
-				if (who.fishCaught.TryGetValue(id, out int[] caught) && caught.Length >= 2)
-					return caught[1];
-				return 0;
-			},
 			Seasons: seasons,
+			FishType: fishType,
 			TrapInfo: trap,
 			CatchInfo: caught,
 			PondInfo: pondInfo
-		);
-	}
-	
-	public static SpriteInfo? GetSprite(Item? item, bool withQuality = true) {
-		if (item is null)
-			return null;
-
-		var data = ItemRegistry.GetData(item.QualifiedItemId);
-		if (data is null)
-			return null;
-
-		// Colored Objects are Special
-		if (item is ColoredObject co) {
-			// Base Layer
-			Texture2D texture = data.GetTexture();
-			Rectangle baseSource = data.GetSourceRect(0, co.ParentSheetIndex);
-
-			if (co.ColorSameIndexAsParentSheetIndex) {
-				// Colored Base Layer
-				return new SpriteInfo(
-					texture,
-					baseSource,
-					baseColor: co.color.Value,
-					quality: withQuality ? co.Quality : 0
-				);
-
-			} else {
-				// Base + Colored Layer
-				return new SpriteInfo(
-					texture,
-					baseSource,
-					overlaySource: data.GetSourceRect(1, co.ParentSheetIndex),
-					overlayColor: co.color.Value,
-					quality: withQuality ? co.Quality : 0
-				);
-			}
-		}
-		
-		return new SpriteInfo(
-			data.GetTexture(),
-			data.GetSourceRect(),
-			quality: withQuality ? item.Quality : 0
 		);
 	}
 }

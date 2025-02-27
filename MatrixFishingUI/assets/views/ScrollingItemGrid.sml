@@ -15,7 +15,7 @@
                        transform-origin="0.5, 0.5"
                        +hover:transform="scale: 1.4"
                        +transition:transform="700ms EaseOutElastic"
-                       click=|~FishInfoDisplay.Display(this)| />
+                       click=|^Display(this)| />
 			</grid>
 		</scrollable>
     </frame>

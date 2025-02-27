@@ -1,6 +1,6 @@
 namespace MatrixFishingUI.Framework.Enums;
 
-public enum Season {
+public enum LuluSeason {
 	All = -1,
 	Spring = 0,
 	Summer = 1,

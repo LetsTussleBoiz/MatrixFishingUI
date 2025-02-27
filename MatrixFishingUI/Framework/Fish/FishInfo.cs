@@ -1,4 +1,6 @@
+using MatrixFishingUI.Framework.Enums;
 using MatrixFishingUI.Framework.Models;
+using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 
 namespace MatrixFishingUI.Framework.Fish;
@@ -27,15 +29,13 @@ public enum FishWeather {
 };
 
 public enum FishType {
-	None,
 	Trap,
 	Catch
 };
 
 public enum CaughtStatus {
-	None,
-	Caught,
-	Uncaught
+	Uncaught,
+	Caught
 }
 
 public record struct FishInfo(
@@ -46,7 +46,7 @@ public record struct FishInfo(
 	Item Item,
 	string Name,
 	string? Description,
-	SpriteInfo? Sprite,
+	Texture2D? Sprite,
 
 	bool Legendary,
 
@@ -54,18 +54,36 @@ public record struct FishInfo(
 	int MinSize,
 	int MaxSize,
 
-	// Personal Stats
-	Func<Farmer, int> NumberCaught,
-	Func<Farmer, int> BiggestCatch,
-
 	// Date Range
-	int[]? Seasons,
+	LuluSeason[]? Seasons,
 
 	// Extra
+	FishType FishType,
 	TrapFishInfo? TrapInfo,
 	CatchFishInfo? CatchInfo,
 	PondInfo? PondInfo
-);
+)
+{
+	public CaughtStatus GetCaughtStatus(Farmer player)
+	{
+		if (!player.fishCaught.TryGetValue(Id, out var value)) return CaughtStatus.Uncaught;
+		if (value.Length <= 0) return CaughtStatus.Uncaught;
+		return value[0] > 0 ? CaughtStatus.Caught : CaughtStatus.Uncaught;
+	}
+
+	public int GetNumberCaught(Farmer player)
+	{
+		if (!player.fishCaught.TryGetValue(Id, out var value)) return 0;
+		if (value.Length <= 0) return 0;
+		return value[0];
+	}
+	public int GetBiggestCatch(Farmer player)
+	{
+		if (!player.fishCaught.TryGetValue(Id, out var value)) return 0;
+		if (value.Length <= 0) return 0;
+		return value[1];
+	}
+}
 
 public record struct TrapFishInfo(
 	WaterType Location
@@ -75,7 +93,6 @@ public record struct CatchFishInfo(
 	Dictionary<SubLocation, List<int>>? Locations,
 	TimeOfDay[] Times,
 	FishWeather Weather,
-
 	int Minlevel
 );
 

@@ -14,7 +14,7 @@ public class FishManager
         _providers.Add(new VanillaProvider(mod));
     }
     
-    private void RefreshFish() {
+    public void RefreshFish() {
 
         Dictionary<string, FishInfo> working = new();
 
@@ -37,17 +37,18 @@ public class FishManager
                     }
                 }
 
-            ModEntry.Log($"Loaded {provided} fish from {provider.Name}");
+            ModEntry.LogTrace($"Loaded {provided} fish from {provider.Name}");
         }
 
         _fish = working;
         _loaded = true;
-        ModEntry.Log($"Loaded {_fish.Count} fish from {_providers.Count} providers.");
+        ModEntry.LogTrace($"Loaded {_fish.Count} fish from {_providers.Count} providers.");
     }
 
     public FishInfo GetFish(string id)
     {
-        _fish.TryGetValue(id, out var value);
+        RefreshFish();
+        _fish.TryGetValue($"(O){id}", out var value);
         return value;
     }
     

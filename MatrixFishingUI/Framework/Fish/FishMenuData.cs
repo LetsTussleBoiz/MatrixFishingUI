@@ -25,6 +25,18 @@ public class FishMenuData : INotifyPropertyChanged
             Fish = items
         };
     }
+    
+    // ReSharper disable once UnusedMember.Global
+    public void Display(ParsedItemData fish)
+    {
+        var fishInfo = ModEntry.Fish.GetFish(fish.ItemId);
+        var index = Fish.IndexOf(fish);
+        var nextFish = ModEntry.Fish.GetFish(index == Fish.Count-1 ? Fish[0].ItemId : Fish[index+1].ItemId);
+        var prevFish = ModEntry.Fish.GetFish(index == 0 ? Fish[^1].ItemId : Fish[index-1].ItemId);
+        ModEntry.Log(fishInfo.ToString() ?? string.Empty);
+        var context = FishInfoData.GetSingleFish(fishInfo, prevFish, nextFish, index);
+        ViewEngine.OpenChildMenu("Mods/Borealis.MatrixFishingUI/Views/TestView", context);
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
