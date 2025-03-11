@@ -35,6 +35,48 @@
     "SelectionRect": {
       "SourceRect": "448, 128, 64, 64",
       "FixedEdges":  "4"
+    },
+    "None": {
+      "SourceRect": "294, 489, 27, 11"
+    },
+    "Rainy": {
+      "SourceRect": "294, 465, 27, 11"
+    },
+    "Sunny": {
+      "SourceRect": "294, 441, 27, 11"
+    },
+    "Any": {
+      "SourceRect": "294, 453, 27, 11"
+    },
+    "Clock": {
+      "SourceRect": "434, 475, 9, 9"
+    },
+    "Spring": {
+      "SourceRect": "188, 439, 32, 8"
+    },
+    "Summer": {
+      "SourceRect": "220, 439, 32, 8"
+    },
+    "Fall": {
+      "SourceRect": "188, 447, 32, 9"
+    },
+    "Winter": {
+      "SourceRect": "220 , 447, 32, 9"
+    }, 
+    "Star": {
+      "SourceRect": "294, 392, 16, 16"
+    },
+    "Leaf": {
+      "SourceRect": "519, 1220, 7, 8"
+    },
+    "Cancel": {
+      "SourceRect": "322, 498, 12, 12"
+    },
+    "Border": {
+      "SourceRect": "473, 36, 25, 25"
+    },
+    "FishBackground": {
+      "SourceRect": "0, 2000, 32, 32"
     }
   }
 }

@@ -2,7 +2,6 @@
 
 using MatrixFishingUI.Framework.Models;
 using Microsoft.Xna.Framework;
-using StardewModdingAPI;
 using StardewValley;
 using StardewValley.GameData.Locations;
 using StardewValley.Locations;

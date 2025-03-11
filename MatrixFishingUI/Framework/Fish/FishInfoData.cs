@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using MatrixFishingUI.Framework.Enums;
 using MatrixFishingUI.Framework.Models;
-using Microsoft.Xna.Framework.Graphics;
 using PropertyChanged.SourceGenerator;
 using StardewValley;
 using StardewValley.ItemTypeDefinitions;
@@ -12,7 +11,6 @@ namespace MatrixFishingUI.Framework.Fish;
 public partial class FishInfoData : INotifyPropertyChanged
 {
     public FishInfo Fish { get; set; }
-    public string HeaderText { get; set; } = "";
     public string Name { get; set; } = "";
     public string? Description { get; set; } = "";
     public ParsedItemData? ParsedFish { get; set; }
@@ -24,15 +22,16 @@ public partial class FishInfoData : INotifyPropertyChanged
     // Trap Fish
     public WaterType WaterType { get; set; }
     // Caught Fish
-    public Dictionary<SubLocation, List<int>>? Locations { get; set; }
-    public int? StartTime { get; set; } = 0;
-    public int? EndTime { get; set; } = 0;
+    public List<string>? Locations { get; set; }
+    public string StartTime { get; set; } = "";
+    public string EndTime { get; set; } = "";
     public FishWeather? FishWeather { get; set; }
     public int? MinLevel { get; set; } = 0;
     // Pond Info
     public int? Initial { get; set; } = 0;
     public int? SpawnTime { get; set; } = 0;
-    public List<ParsedItemData>? ProducedItems { get; set; }
+    public string? SpawnTimeString { get; set; } = "";
+    public PondItemData? PondItems { get; set; }
     // Method Calls
     public CaughtStatus CaughtStatus { get; set; }
     public int NumberCaught { get; set; }
@@ -50,9 +49,8 @@ public partial class FishInfoData : INotifyPropertyChanged
     
     public static FishInfoData GetSingleFish(FishInfo fish, FishInfo prevFish, FishInfo nextFish, int index)
     {
-        return new()
+        return new FishInfoData
         {
-            HeaderText = fish.Name,
             Fish = fish,
             Name = fish.Name,
             Description = fish.Description,
@@ -63,14 +61,15 @@ public partial class FishInfoData : INotifyPropertyChanged
             Seasons = fish.Seasons,
             FishType = fish.FishType,
             WaterType = fish.TrapInfo?.Location ?? WaterType.None,
-            Locations = fish.CatchInfo?.Locations,
-            StartTime = fish.CatchInfo?.Times[0].Start,
-            EndTime = fish.CatchInfo?.Times[0].End,
+            Locations = GetLocations(fish.CatchInfo?.Locations?.Keys.ToList()),
+            StartTime = FormatTime(fish.CatchInfo?.Times[0].Start),
+            EndTime = FormatTime(fish.CatchInfo?.Times[0].End),
             FishWeather = fish.CatchInfo?.Weather,
             MinLevel = fish.CatchInfo?.Minlevel,
             Initial = fish.PondInfo?.Initial,
             SpawnTime = fish.PondInfo?.SpawnTime,
-            ProducedItems = ParsePondItems(fish.PondInfo?.ProducedItems),
+            SpawnTimeString = $"Spawn Time: {fish.PondInfo?.SpawnTime} days",
+            PondItems = PondItemData.GetPondItems(fish.PondInfo, fish.Item),
             CaughtStatus = fish.GetCaughtStatus(Game1.player),
             NumberCaught = fish.GetNumberCaught(Game1.player),
             BiggestCatch = fish.GetBiggestCatch(Game1.player),
@@ -85,9 +84,9 @@ public partial class FishInfoData : INotifyPropertyChanged
     public void PreviousFish()
     {
         var fishCatalogue = FishMenuData.GetFish().Fish;
-        var index = Index == 0 ? fishCatalogue.Count - 1 : Index - 1;
-        var prevFish = ModEntry.Fish.GetFish(index == 0 ? fishCatalogue[^1].ItemId : FishMenuData.GetFish().Fish[index-1].ItemId);
-        var context = GetSingleFish(Previous, prevFish, Current, index);
+        var localIndex = Index == 0 ? fishCatalogue.Count - 1 : Index - 1;
+        var prevFish = ModEntry.Fish.GetFish(localIndex == 0 ? fishCatalogue[^1].ItemId : FishMenuData.GetFish().Fish[localIndex-1].ItemId);
+        var context = GetSingleFish(Previous, prevFish, Current, localIndex);
         ViewEngine.ChangeChildMenu("Mods/Borealis.MatrixFishingUI/Views/TestView", context);
     }
 
@@ -95,9 +94,9 @@ public partial class FishInfoData : INotifyPropertyChanged
     public void NextFish()
     {
         var fishCatalogue = FishMenuData.GetFish().Fish;
-        var index = Index == fishCatalogue.Count - 1 ? 0 : Index + 1;
-        var nextFish = ModEntry.Fish.GetFish(index == fishCatalogue.Count - 1 ? fishCatalogue[0].ItemId : FishMenuData.GetFish().Fish[index+1].ItemId);
-        var context = GetSingleFish(Next, Current, nextFish, index);
+        var localIndex = Index == fishCatalogue.Count - 1 ? 0 : Index + 1;
+        var nextFish = ModEntry.Fish.GetFish(localIndex == fishCatalogue.Count - 1 ? fishCatalogue[0].ItemId : FishMenuData.GetFish().Fish[localIndex+1].ItemId);
+        var context = GetSingleFish(Next, Current, nextFish, localIndex);
         ViewEngine.ChangeChildMenu("Mods/Borealis.MatrixFishingUI/Views/TestView", context);
     }
     
@@ -111,16 +110,29 @@ public partial class FishInfoData : INotifyPropertyChanged
         }
     }
 
-    public static List<ParsedItemData> ParsePondItems(List<Item>? items)
+    private static string FormatTime(int? time)
     {
-        var parsedItems = new List<ParsedItemData>();
-        if(items is null) return parsedItems;
-        foreach (var item in items)
+        var timeEdit = time / 100;
+        if (timeEdit > 12)
         {
-            parsedItems.Add(ItemRegistry.GetData(item.ItemId));
+            if (timeEdit >= 24)
+            {
+                return timeEdit == 24 ? $"{timeEdit - 12}:00am " : $"{timeEdit - 24}:00am ";
+            }
+            return $"{timeEdit - 12}:00pm ";
         }
-        ModEntry.Log(parsedItems.ToString() ?? "Error: Pond Items are null.");
-        return parsedItems;
+        return $"{timeEdit}:00am ";
+    }
+
+    private static List<string> GetLocations(List<SubLocation>? list)
+    {
+        var toReturn = new List<string>();
+        if (list is null) return toReturn;
+        foreach (var sublocation in list)
+        {
+            if (sublocation.Location != null) toReturn.Add(sublocation.Location.DisplayName);
+        }
+        return toReturn;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

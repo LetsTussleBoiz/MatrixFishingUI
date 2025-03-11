@@ -1,5 +1,4 @@
 ﻿using MatrixFishingUI.Framework.Models;
-using StardewModdingAPI;
 
 namespace MatrixFishingUI.Framework.Fish;
 
@@ -42,19 +41,23 @@ public class FishManager
 
         _fish = working;
         _loaded = true;
-        ModEntry.LogTrace($"Loaded {_fish.Count} fish from {_providers.Count} providers.");
+        ModEntry.Log($"Loaded {_fish.Count} fish from {_providers.Count} providers.");
     }
 
     public FishInfo GetFish(string id)
     {
-        RefreshFish();
         _fish.TryGetValue($"(O){id}", out var value);
         return value;
+    }
+
+    public Dictionary<string, FishInfo> GetAllFish()
+    {
+        return _fish;
     }
     
     #region Locations
 
-    private static void AddFish(SubLocation loc, int[] seasons, string fish, Dictionary<string, Dictionary<SubLocation, List<int>>> result ) {
+    public void AddFish(SubLocation loc, int[] seasons, string fish, Dictionary<string, Dictionary<SubLocation, List<int>>> result ) {
         if (!result.TryGetValue(fish, out var entry)) {
             result[fish] = new() {
                 [loc] = seasons.ToList(),
@@ -71,7 +74,7 @@ public class FishManager
         }
     }
 
-    private static void RemoveFish(SubLocation loc, int[] seasons, string fish, Dictionary<string, Dictionary<SubLocation, List<int>>> result) {
+    public void RemoveFish(SubLocation loc, int[] seasons, string fish, Dictionary<string, Dictionary<SubLocation, List<int>>> result) {
         if (!result.TryGetValue(fish, out var entry))
             return;
 

@@ -5,6 +5,7 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewUI.Framework;
+using StardewValley.Tools;
 
 namespace MatrixFishingUI
 {
@@ -15,6 +16,9 @@ namespace MatrixFishingUI
         private readonly PerScreen<Lazy<GameLocation[]>> _locations = new(GetLocationsForCache);
         public static IViewEngine? ViewEngine;
         internal static FishManager Fish = null!;
+        private bool HoldingRod = false;
+        private IViewDrawable? hudWidget;
+        private int _timer = 0;
         
         public override void Entry(IModHelper helper)
         {
@@ -33,12 +37,18 @@ namespace MatrixFishingUI
             helper.Events.GameLoop.Saving += OnSaving;
             helper.Events.GameLoop.UpdateTicked += OnUpdateTicked;
             helper.Events.GameLoop.OneSecondUpdateTicked += OnOneSecondUpdateTicked;
+            helper.Events.Display.RenderedHud += Display_RenderedHud;
 
             helper.Events.Input.ButtonsChanged += OnButtonChanged;
 
             helper.Events.World.LocationListChanged += OnLocationListChanged;
 
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+        }
+        
+        private void Display_RenderedHud(object? sender, RenderedHudEventArgs e)
+        {
+            hudWidget?.Draw(e.SpriteBatch, new(0, 100));
         }
         
         private void GenerateGMCM()
@@ -251,6 +261,7 @@ namespace MatrixFishingUI
         
         private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
         {
+            Fish.RefreshFish();
             ResetLocationCache();
         }
         
@@ -292,6 +303,27 @@ namespace MatrixFishingUI
             }
         }
         
+        private void ToggleHud()
+        {
+            if (hudWidget is not null)
+            {
+                hudWidget.Dispose();
+                hudWidget = null;
+            }
+            else
+            {
+                hudWidget = ViewEngine?.CreateDrawableFromAsset("Mods/Borealis.MatrixFishingUI/Views/Hud");
+                if (hudWidget != null) hudWidget.Context = new HudMenuData(Fish.GetAllFish());
+                HudMenuData? data;
+                if (hudWidget?.Context != null)
+                {
+                    data = (HudMenuData)hudWidget.Context;
+                    data.UpdateLocalFish();
+                }
+                LogTrace("Attempting HUD toggle On...");
+            }
+        }
+        
         private void OnRendered(object? sender, RenderedEventArgs e)
         {
             if (!Context.IsWorldReady)
@@ -303,12 +335,37 @@ namespace MatrixFishingUI
         {
             if (!Context.IsWorldReady)
                 return;
+            switch (Game1.player.CurrentTool)
+            {
+                case FishingRod when !HoldingRod:
+                    HoldingRod = true;
+                    ToggleHud();
+                    return;
+                case FishingRod when HoldingRod:
+                    break;
+            }
+
+            if (Game1.player.CurrentTool is FishingRod || !HoldingRod) return;
+            HoldingRod = false;
+            ToggleHud();
+            LogTrace("Attempting HUD toggle off...");
         }
 
         private void OnOneSecondUpdateTicked(object? sender, OneSecondUpdateTickedEventArgs e)
         {
             if (!Context.IsWorldReady)
                 return;
+            if (_timer < 10)
+            {
+                _timer++;
+            }
+            else
+            {
+                _timer = 0;
+                if (hudWidget?.Context == null) return;
+                var context = (HudMenuData)hudWidget.Context;
+                context.UpdateLocalFish();
+            }
         }
 
         /// <inheritdoc cref="IGameLoopEvents.Saving"/>

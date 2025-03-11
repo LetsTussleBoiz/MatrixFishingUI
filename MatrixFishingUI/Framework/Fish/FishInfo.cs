@@ -2,6 +2,7 @@ using MatrixFishingUI.Framework.Enums;
 using MatrixFishingUI.Framework.Models;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
+using StardewValley.GameData.FishPonds;
 
 namespace MatrixFishingUI.Framework.Fish;
 
@@ -21,9 +22,9 @@ public enum WaterType {
 	Ocean
 };
 
-public enum FishWeather {
+public enum FishWeather {	
 	None,
-	Rainy,
+	Rain,
 	Sunny,
 	Any
 };
@@ -99,5 +100,6 @@ public record struct CatchFishInfo(
 public record struct PondInfo(
 	int Initial,
 	int SpawnTime,
-	List<Item> ProducedItems
+	List<Item> ProducedItems,
+	List<FishPondReward> FishPondRewards
 );

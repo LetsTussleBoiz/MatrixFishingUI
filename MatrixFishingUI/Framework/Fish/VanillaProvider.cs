@@ -1,12 +1,8 @@
 using System.Text.RegularExpressions;
 using MatrixFishingUI.Framework.Enums;
 using MatrixFishingUI.Framework.Models;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
 using StardewValley;
 using StardewValley.GameData.FishPonds;
-using StardewValley.Objects;
 
 namespace MatrixFishingUI.Framework.Fish;
 
@@ -31,14 +27,57 @@ public class VanillaProvider : IFishProvider {
 
 		foreach (var entry in data) {
 			locations.TryGetValue("(O)"+entry.Key, out Dictionary<SubLocation, List<int>>? locs);
-
-			try {
-				if (locs != null)
+			try
+			{
+				var step = locs ?? [];
+				if (FishHelper.SkipFish(Game1.player, "(O)"+entry.Key))
 				{
-					FishInfo? info = GetFishInfo("(O)"+entry.Key, entry.Value, locs, pondData);
-					if (info.HasValue)
-						result.Add(info.Value);
+					switch ("(O)"+entry.Key)
+					{
+						case "(O)898":
+							locations.TryGetValue("(O)159", out Dictionary<SubLocation, List<int>>? crimsonlocs);
+							step = crimsonlocs ?? [];
+							foreach (var pair in step)
+							{
+								ModEntry.Fish.AddFish(pair.Key, [(int)LuluSeason.All],"(O)898",locations);
+							}
+							break;
+						case "(O)899":
+							locations.TryGetValue("(O)160", out Dictionary<SubLocation, List<int>>? anglerlocs);
+							step = anglerlocs ?? [];
+							foreach (var pair in step)
+							{
+								ModEntry.Fish.AddFish(pair.Key, [(int)LuluSeason.All],"(O)899",locations);
+							}
+							break;
+						case "(O)900":
+							locations.TryGetValue("(O)163", out Dictionary<SubLocation, List<int>>? legendlocs);
+							step = legendlocs ?? [];
+							foreach (var pair in step)
+							{
+								ModEntry.Fish.AddFish(pair.Key, [(int)LuluSeason.All],"(O)900",locations);
+							}
+							break;
+						case "(O)901":
+							locations.TryGetValue("(O)682", out Dictionary<SubLocation, List<int>>? mutantlocs);
+							step = mutantlocs ?? [];
+							foreach (var pair in step)
+							{
+								ModEntry.Fish.AddFish(pair.Key, [(int)LuluSeason.All],"(O)901",locations);
+							}
+							break;
+						case "(O)902":
+							locations.TryGetValue("(O)775", out Dictionary<SubLocation, List<int>>? glacierlocs);
+							step = glacierlocs ?? [];
+							foreach (var pair in step)
+							{
+								ModEntry.Fish.AddFish(pair.Key, [(int)LuluSeason.All],"(O)902",locations);
+							}
+							break;
+					}
 				}
+				var info = GetFishInfo("(O)"+entry.Key, entry.Value, step, pondData);
+				if (info.HasValue) result.Add(info.Value);
 			} catch(Exception ex) {
 				ModEntry.LogWarn($"Unable to process fish: {entry.Key}");
 			}
@@ -48,9 +87,6 @@ public class VanillaProvider : IFishProvider {
 
 	private static FishInfo? GetFishInfo(string id, string data, Dictionary<SubLocation, List<int>> locations, List<FishPondData> pondData) {
 		if (string.IsNullOrEmpty(data))
-			return null;
-
-		if (FishHelper.SkipFish(Game1.player, id))
 			return null;
 
 		string[] bits = data.Split('/');
@@ -111,7 +147,7 @@ public class VanillaProvider : IFishProvider {
 					weather = FishWeather.Sunny;
 					break;
 				case "rainy":
-					weather = FishWeather.Rainy;
+					weather = FishWeather.Rain;
 					break;
 				case "both":
 					weather = FishWeather.Any;
@@ -163,7 +199,7 @@ public class VanillaProvider : IFishProvider {
 
 		// Fish Ponds
 		FishPondData? pond = null;
-		if (pondData != null && ! obj.HasContextTag("fish_legendary"))
+		if (pondData != null)
 			foreach (var entry in pondData) {
 				bool matched = true;
 				foreach (string tag in entry.RequiredTags) {
@@ -195,7 +231,12 @@ public class VanillaProvider : IFishProvider {
 			pondInfo = new(
 				Initial: initial,
 				SpawnTime: pond.SpawnTime,
-				ProducedItems: pond.ProducedItems.Select(x => x.ItemId).Distinct().Select(x => (x == "812" ? FishHelper.GetRoeForFish(obj) : ItemRegistry.Create(x, 1))).ToList()
+				ProducedItems: pond.ProducedItems
+					.Select(x => x.ItemId)
+					.Distinct()
+					.Select(x => (x == "812" ? FishHelper.GetRoeForFish(obj) : ItemRegistry.Create(x, 1)))
+					.ToList(),
+				FishPondRewards: pond.ProducedItems
 			);
 		}
 

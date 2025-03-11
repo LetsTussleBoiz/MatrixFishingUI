@@ -36,6 +36,10 @@
       <Content Include="assets\sprites\MenuTiles.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="assets\views\Hud.sml" />
+      <Content Include="assets\views\Hud.sml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

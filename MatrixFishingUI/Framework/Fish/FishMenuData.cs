@@ -29,6 +29,7 @@ public class FishMenuData : INotifyPropertyChanged
     // ReSharper disable once UnusedMember.Global
     public void Display(ParsedItemData fish)
     {
+        // ModEntry.Fish.RefreshFish();
         var fishInfo = ModEntry.Fish.GetFish(fish.ItemId);
         var index = Fish.IndexOf(fish);
         var nextFish = ModEntry.Fish.GetFish(index == Fish.Count-1 ? Fish[0].ItemId : Fish[index+1].ItemId);
