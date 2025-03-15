@@ -47,10 +47,7 @@
                     orientation="vertical"
                     horizontal-content-alignment="middle">
                         <label margin="0, 8" color="#136" text={#ui.fishipedia.titles.general} font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
-                        <lane orientation="vertical" horizontal-content-alignment="end">
-                            <lane *switch={Legendary} layout="32px" margin="0, 0, -20, -15" tooltip={#ui.fishipedia.tooltips.legendary} orientation="vertical" horizontal-content-alignment="end" z-index="1">
-                                <image *case="true" layout="24px" z-index="1" tooltip={#ui.fishipedia.tooltips.legendary} sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Star} />
-                            </lane>
+                        <lane layout="64px 64px">
                             <image sprite={ParsedFish}
                                 layout="64px" 
                                 margin="0, 0, 0, 4" 
@@ -58,7 +55,17 @@
                                 transform-origin="0.5, 0.5"
                                 +hover:transform="scale: 1.4"
                                 +transition:transform="700ms EaseOutElastic"
-                                tooltip={ParsedFish} />
+                                tooltip={ParsedFish} /> 
+                            <panel layout="stretch stretch" horizontal-content-alignment="end" vertical-content-alignment="start">
+                                <image *if={Legendary} 
+                                    layout="32px" 
+                                    focusable="true" 
+                                    transform-origin="0.5, 0.5"
+                                    +hover:transform="scale: 1.4"
+                                    +transition:transform="700ms EaseOutElastic"
+                                    tooltip={#ui.fishipedia.tooltips.legendary} 
+                                    sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Legendary} />
+                            </panel>
                         </lane>
                         <lane orientation="horizontal" horizontal-content-alignment="start">
                             <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.description} />
