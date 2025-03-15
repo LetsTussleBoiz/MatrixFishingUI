@@ -155,7 +155,7 @@ public partial class FishInfoTabViewModel(FishInfoTab value, bool active)
     : INotifyPropertyChanged
 {
     public Tuple<int, int, int, int> Margin =>
-        IsActive ? new(0, 0, -12, 0) : new(0, 0, 0, 0);
+        IsActive ? new Tuple<int, int, int, int>(0, 0, -12, 0) : new Tuple<int, int, int, int>(0, 0, 0, 0);
     public FishInfoTab Value { get; } = value;
 
     [Notify] private bool isActive = active;

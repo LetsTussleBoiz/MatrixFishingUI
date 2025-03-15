@@ -48,9 +48,6 @@
     "Any": {
       "SourceRect": "294, 453, 27, 11"
     },
-    "Clock": {
-      "SourceRect": "434, 475, 9, 9"
-    },
     "Spring": {
       "SourceRect": "188, 439, 32, 8"
     },
@@ -65,12 +62,6 @@
     }, 
     "Star": {
       "SourceRect": "294, 392, 16, 16"
-    },
-    "Leaf": {
-      "SourceRect": "519, 1220, 7, 8"
-    },
-    "Cancel": {
-      "SourceRect": "322, 498, 12, 12"
     },
     "Border": {
       "SourceRect": "473, 36, 25, 25"

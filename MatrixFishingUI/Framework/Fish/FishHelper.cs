@@ -180,8 +180,12 @@ public static class FishHelper {
 	public static Dictionary<string, List<string>> GetLocationFish(GameLocation location, int season) {
 		return GetLocationFish(location.Name, season);
 	}
+	
+	public static Dictionary<string, List<string>> GetLocationFishNoSeason(GameLocation location) {
+		return GetLocationFish(location.Name, null);
+	}
 
-	public static Dictionary<string, List<string>> GetLocationFish(string key, int season, Dictionary<string, LocationData>? locations = null) {
+	private static Dictionary<string, List<string>> GetLocationFish(string key, int? season, Dictionary<string, LocationData>? locations = null) {
 		if (key == "BeachNightMarket")
 			key = "Beach";
 
@@ -192,11 +196,11 @@ public static class FishHelper {
 			try {
 				result = GetLocationFish(season, locations[key]);
 			} catch {
-				result = new();
-				ModEntry.LogWarn($"Error at FishHelper line 208");
+				result = new Dictionary<string, List<string>>();
+				ModEntry.LogWarn("Error at FishHelper line 196");
 			}
 		else
-			result = new();
+			result = new Dictionary<string, List<string>>();
 
 		Farm farm;
 
@@ -209,12 +213,12 @@ public static class FishHelper {
 			loc = Game1.getLocationFromName(key);
 			if (loc == null)
 				return result;
-			else if (loc is not Farm)
+			if (loc is not Farm location)
 				return result;
-			farm = (Farm) loc;
-			ModEntry.LogWarn($"Error at {loc.DisplayName}, farm = loc section");
+			farm = location;
+			ModEntry.LogWarn($"Error at {location.DisplayName}, farm = loc section");
 		}
-		
+		// Only reached if the location is a farm, determines the kind of farm below
 		switch (Game1.whichFarm) {
 			case 1:
 				result.Clear();
@@ -245,7 +249,7 @@ public static class FishHelper {
 			}
 		}
 		try{
-			GetLocationFish(season, locations[Game1.GetFarmTypeKey()], result);
+			GetLocationFish(season, locations[$"Farm_{Game1.GetFarmTypeKey()}"], result);
 		} catch {
 			ModEntry.LogWarn($"Error at {getLocName(locations[Game1.GetFarmTypeKey()])}, farm key section.");
 		}
@@ -263,37 +267,41 @@ public static class FishHelper {
 			existing.Add(zone, new() { fish });
 	}
 
-	public static Dictionary<string, List<string>> GetLocationFish(int season, LocationData data) {
-		return GetLocationFish(season, data, new());
+	private static Dictionary<string, List<string>> GetLocationFish(int? season, LocationData data) {
+		return GetLocationFish(season, data, new Dictionary<string, List<string>>());
 	}
 
-	public static Dictionary<string, List<string>> GetLocationFish(int season, LocationData data, Dictionary<string, List<string>> existing) {
+	private static Dictionary<string, List<string>> GetLocationFish(int? season, LocationData data, Dictionary<string, List<string>> existing) {
 		if (data.Equals(null))
 			return existing;
 
-		string name = getLocName(data);
+		var name = getLocName(data);
 		List<SpawnFishData> entries = data.Fish;
 		if (!data.Equals(Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations")["Default"])) {
-			LocationData Default = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations")["Default"];
-			foreach (SpawnFishData f in Default.Fish)
+			var Default = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations")["Default"];
+			foreach (var f in Default.Fish)
 				if (!entries.Contains(f))
 					entries.Add(f);
 		}
 
 		entries.Sort((a,b)=> { return a.Precedence.CompareTo(b.Precedence); });
 
-		for (int i = 0; i < entries.Count; i++) {
-			string fish = string.IsNullOrEmpty(entries[i].ItemId) ? "(O)213" : entries[i].ItemId;
-			string fName = string.IsNullOrEmpty(ItemRegistry.Create(fish).DisplayName)? "Fish" : ItemRegistry.Create(fish).DisplayName;
-			//if(fish=="(O)213") { fName = "Fish Taco"; }
-			string zone = string.IsNullOrEmpty(entries[i].FishAreaId) ? "No zone" : entries[i].FishAreaId;
+		for (var i = 0; i < entries.Count; i++) {
+			var fish = string.IsNullOrEmpty(entries[i].ItemId) ? "(O)213" : entries[i].ItemId;
+			var fName = string.IsNullOrEmpty(ItemRegistry.Create(fish).DisplayName)? "Fish" : ItemRegistry.Create(fish).DisplayName;
+			var zone = string.IsNullOrEmpty(entries[i].FishAreaId) ? "No zone" : entries[i].FishAreaId;
 			if (fish.StartsWith("(O)") && canAddFish(entries[i], season, data))
 				AddFish(fName, fish, zone, existing);
 		}
-		ModEntry.LogTrace($"Added fish data for {name}, season {season}");
+
+		ModEntry.LogTrace(season is not null
+			? $"Added fish data for {name}, season {season}"
+			: $"Added fish data for {name}, with no season");
+
 		return existing;
 	}
-	public static bool ContainsFish(LocationData loc) {
+
+	private static bool ContainsFish(LocationData loc) {
 		List<SpawnFishData> catchables = loc.Fish;
 		foreach (SpawnFishData f in catchables) if (f.ItemId.StartsWith("(O)")) return true;
 		return false;
@@ -330,7 +338,7 @@ public static class FishHelper {
 		if (name.Length > 25) name = endCheck;
 		return name;
 	}
-	private static bool canAddFish(SpawnFishData fish, int season, LocationData data) {
+	private static bool canAddFish(SpawnFishData fish, int? season, LocationData data) {
 		if (fish.Season == null && fish.Condition == null) return true;
 		if (fish.Season != null) {
 			ModEntry.LogTrace($"Season int: {season}, Season value {fish.Season}");

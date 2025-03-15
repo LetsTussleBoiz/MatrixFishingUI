@@ -21,7 +21,7 @@ public class FishMenuData : INotifyPropertyChanged
             .ToList();
         return new()
         {
-            HeaderText = "All Fish",
+            HeaderText = "Fishipedia",
             Fish = items
         };
     }

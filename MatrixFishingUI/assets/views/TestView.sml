@@ -46,10 +46,10 @@
                     layout="stretch content"
                     orientation="vertical"
                     horizontal-content-alignment="middle">
-                        <label margin="0, 8" color="#136" text="General Information" font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
+                        <label margin="0, 8" color="#136" text={#ui.fishipedia.titles.general} font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
                         <lane orientation="vertical" horizontal-content-alignment="end">
-                            <lane *switch={Legendary} layout="32px" margin="0, 0, -20, -15" tooltip="Legendary Fish" orientation="vertical" horizontal-content-alignment="end" z-index="1">
-                                <image *case="true" layout="24px" z-index="1" tooltip="Legendary Fish" sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Star} />
+                            <lane *switch={Legendary} layout="32px" margin="0, 0, -20, -15" tooltip={#ui.fishipedia.tooltips.legendary} orientation="vertical" horizontal-content-alignment="end" z-index="1">
+                                <image *case="true" layout="24px" z-index="1" tooltip={#ui.fishipedia.tooltips.legendary} sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Star} />
                             </lane>
                             <image sprite={ParsedFish}
                                 layout="64px" 
@@ -61,62 +61,62 @@
                                 tooltip={ParsedFish} />
                         </lane>
                         <lane orientation="horizontal" horizontal-content-alignment="start">
-                            <label margin="0, 8" color="#136" text="Description: " />
+                            <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.description} />
                             <label margin="0, 8" color="#136" text={Description} />
                         </lane>
                         <lane orientation="horizontal" horizontal-content-alignment="middle">
-                            <label margin="0, 8" color="#136" text="Fish Catch Status: " />
+                            <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.caught_status} />
                             <label margin="0, 8" color="#136" text={CaughtStatus} />
                         </lane>
                         <lane orientation="horizontal" horizontal-content-alignment="middle">
-                            <label margin="0, 8" color="#136" text="Minimum Size: " />
+                            <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.min_size} />
                             <label margin="0, 8" color="#136" text={MinSize} />
                             <spacer layout="4px 0px" />
-                            <label margin="0, 8" color="#136" text="in." />
+                            <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.inches} />
                         </lane>
                         <lane orientation="horizontal" horizontal-content-alignment="middle">
-                            <label margin="0, 8" color="#136" text="Maximum Size: " />
+                            <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.max_size} />
                             <label margin="0, 8" color="#136" text={MaxSize} />
                             <spacer layout="4px 0px" />
-                            <label margin="0, 8" color="#136" text="in." />
+                            <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.inches} />
                         </lane>
                 </lane>
                 <scrollable peeking="128" *case="CatchInfo">
                 <lane orientation="vertical" horizontal-content-alignment="middle" layout="stretch content">
                     <lane *switch={FishType} orientation="vertical" horizontal-content-alignment="middle">
                         <lane *case="Trap" orientation="vertical" horizontal-content-alignment="middle">
-                            <label margin="0, 8" color="#136" text="Trap Information" font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
+                            <label margin="0, 8" color="#136" text={#ui.fishipedia.titles.trap} font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
                             <lane orientation="horizontal" horizontal-content-alignment="start">
-                                <label margin="0, 8" color="#136" text="Water Type: " />
+                                <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.water_type} />
                                 <label margin="0, 8" color="#136" text={WaterType} />
                             </lane>
                         </lane>
                         <lane *case="Catch" orientation="vertical" horizontal-content-alignment="middle">
-                            <label margin="0, 8" color="#136" text="Catch Information" font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
+                            <label margin="0, 8" color="#136" text={#ui.fishipedia.titles.catch} font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
                             <lane orientation="horizontal" horizontal-content-alignment="middle">
-                                <label margin="0, 8" color="#136" text="Number Caught: " />
+                                <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.fish_caught} />
                                 <label margin="0, 8" color="#136" text={NumberCaught} />
                             </lane>
                             <lane orientation="horizontal" horizontal-content-alignment="middle">
-                                <label margin="0, 8" color="#136" text="Time Available: " />
-                                <label margin="0, 8" color="#136" text="Between " />
+                                <label margin="0, 8" color="#136" text={#ui.fishipedia.time.time_available} />
+                                <label margin="0, 8" color="#136" text={#ui.fishipedia.time.between} />
                                 <label margin="0, 8" color="#136" text={StartTime} />
-                                <label margin="0, 8" color="#136" text="and " />
+                                <label margin="0, 8" color="#136" text={#ui.fishipedia.time.and} />
                                 <label margin="0, 8" color="#136" text={EndTime} />
                             </lane>
                             <lane orientation="horizontal" horizontal-content-alignment="middle">
-                                <label margin="0, 8" color="#136" text="Fishing Level Required: " />
+                                <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.fishing_level} />
                                 <label margin="0, 8" color="#136" text={MinLevel} />
                             </lane>
                             <lane orientation="horizontal" horizontal-content-alignment="middle">
-                                <label margin="0, 8" color="#136" text="Biggest Caught: " />
+                                <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.biggest} />
                                 <label margin="0, 8" color="#136" text={BiggestCatch} />
                             </lane>
                             <lane orientation="vertical" horizontal-content-alignment="middle">
-                                <label margin="0, 8" color="#136" text="Season(s) Available: " />
+                                <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.seasons} />
                                 <lane *repeat={Seasons} orientation="vertical" horizontal-content-alignment="middle">
                                     <lane *switch={:this} orientation="horizontal">
-                                        <label *case="All" margin="0, 8" color="#136" text="Every Season" />
+                                        <label *case="All" margin="0, 8" color="#136" text={#ui.fishipedia.labels.every_season} />
                                         <image *case="Spring" layout="160px 40px" sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Spring} />
                                         <image *case="Summer" layout="160px 40px" sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Summer} />
                                         <image *case="Fall" layout="160px 40px" sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Fall} />
@@ -125,40 +125,40 @@
                                 </lane>
                             </lane>
                             <lane orientation="horizontal" horizontal-content-alignment="middle">
-                                <label margin="0, 8" color="#136" text="Weather Required: " />
+                                <label margin="0, 8" color="#136" text={#ui.fishipedia.labels.weather_required} />
                                 <lane *switch={FishWeather} orientation="vertical">
                                     <image *case="Sunny"
                                         layout="104px 40px"
                                         horizontal-alignment="middle"
                                         vertical-alignment="middle"
                                         sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Sunny}
-                                        tooltip="Sunny"
+                                        tooltip={#ui.fishipedia.weather.sunny}
                                         focusable="true" />
                                     <image *case="Rain"
                                         layout="104px 40px"
                                         horizontal-alignment="middle"
                                         vertical-alignment="middle"
                                         sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Rainy}
-                                        tooltip="Rainy"
+                                        tooltip={#ui.fishipedia.weather.rainy}
                                         focusable="true" />
                                     <image *case="Any"
                                         layout="104px 40px"
                                         horizontal-alignment="middle"
                                         vertical-alignment="middle"
                                         sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Any}
-                                        tooltip="Any"
+                                        tooltip={#ui.fishipedia.weather.any}
                                         focusable="true" />
                                     <image *case="None"
                                         layout="104px 40px"
                                         horizontal-alignment="middle"
                                         vertical-alignment="middle"
                                         sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:None}
-                                        tooltip="Weather Required: None"
+                                        tooltip={#ui.fishipedia.weather.none}
                                         focusable="true" />
                                 </lane>
                             </lane>
                             <lane orientation="vertical" horizontal-content-alignment="middle">
-                                <label margin="0, 8" color="#136" text="Locations" font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
+                                <label margin="0, 8" color="#136" text={#ui.fishipedia.titles.locations} font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
                                 <lane *repeat={Locations} orientation="vertical" horizontal-content-alignment="middle">
                                     <label margin="0, 8" color="#136" text={:this} />
                                 </lane>
@@ -171,9 +171,9 @@
                 <lane layout="stretch content"
                     orientation="vertical"
                     horizontal-content-alignment="middle">
-                        <label margin="0, 8" color="#136" text="Pond Information" font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
+                        <label margin="0, 8" color="#136" text={#ui.fishipedia.titles.pond} font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
                         <label margin="0, 8" color="#136" text={SpawnTimeString} />
-                        <label margin="0, 8" color="#136" text="Items Produced" font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
+                        <label margin="0, 8" color="#136" text={#ui.fishipedia.titles.items_produced} font="dialogue" shadow-alpha="0.6" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
                         <grid *context={PondItems}
                             layout="stretch content"
                             item-layout="count: 1"

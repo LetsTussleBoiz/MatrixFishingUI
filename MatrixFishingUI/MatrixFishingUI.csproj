@@ -19,11 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Framework\UI\" />
-      <Folder Include="references\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Remove="assets\views\ScrollingItemGrid.sml" />
       <Content Include="assets\views\ScrollingItemGrid.sml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -38,6 +33,10 @@
       </Content>
       <None Remove="assets\views\Hud.sml" />
       <Content Include="assets\views\Hud.sml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="assets\sprites\emojis.json" />
+      <Content Include="assets\sprites\emojis.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>

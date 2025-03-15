@@ -1,0 +1,14 @@
+{
+  "Texture": "LooseSprites/emojis",
+  "Sprites": {
+    "Clock": {
+      "SourceRect": "0, 27, 9, 9 "
+    },
+    "Umbrella": {
+      "SourceRect": "27, 63, 9, 9"
+    },
+    "Season": {
+      "SourceRect": "108, 63, 9, 9"
+    }
+  }
+}

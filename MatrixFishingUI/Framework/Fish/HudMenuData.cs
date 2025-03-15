@@ -1,56 +1,95 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using MatrixFishingUI.Framework.Enums;
-using MatrixFishingUI.Framework.Models;
-using StardewUI.Framework;
 using StardewValley;
-using StardewValley.ItemTypeDefinitions;
 
 namespace MatrixFishingUI.Framework.Fish;
 
 public class HudMenuData(Dictionary<string, FishInfo> fishInfos) : INotifyPropertyChanged
 {
+    // ReSharper disable once MemberCanBePrivate.Global
     public Dictionary<string,FishInfo> FishInfos { get; set; } = fishInfos;
     public string Title { get; set; } = "Fish Helper";
+    // ReSharper disable once MemberCanBePrivate.Global
+    public Dictionary<string, LocalFish> FilteredCatchables { get; set; } = [];
+    // ReSharper disable once MemberCanBePrivate.Global
     public List<LocalFish> LocalCatchableFish { get; set; } = [];
+    // ReSharper disable once MemberCanBePrivate.Global
+    public Dictionary<string, LocalFish> FilteredUncatchables { get; set; } = [];
+    // ReSharper disable once MemberCanBePrivate.Global
     public List<LocalFish> LocalUncatchableFish { get; set; } = [];
+    public bool IsThereFish { get; set; }
 
     public void UpdateLocalFish()
     {
+        IsThereFish = false;
+        FilteredCatchables.Clear();
+        FilteredUncatchables.Clear();
         LocalCatchableFish.Clear();
         LocalUncatchableFish.Clear();
-        var list = FishHelper.GetLocationFish(Game1.player.currentLocation, Game1.seasonIndex);
-        foreach (var fish in from pair in list let zone = pair.Key from fish in pair.Value select fish)
+        var springFish = FishHelper.GetLocationFish(Game1.player.currentLocation, 0);
+        var summerFish = FishHelper.GetLocationFish(Game1.player.currentLocation, 1);
+        var fallFish = FishHelper.GetLocationFish(Game1.player.currentLocation, 2);
+        var winterFish = FishHelper.GetLocationFish(Game1.player.currentLocation, 3);
+        IsThereFish = true;
+        var currentWeather = Game1.currentLocation.GetWeather().Weather;
+        var currentSeasonNumber = Game1.currentLocation.GetSeasonIndex();
+        var currentTime = Game1.timeOfDay;
+        var counter = 0;
+        foreach (var (_, value) in springFish)
+        {
+            counter += TryAddFish(value, currentWeather, currentSeasonNumber, currentTime);
+        }
+        foreach (var (_, value) in summerFish)
+        {
+            counter += TryAddFish(value, currentWeather, currentSeasonNumber, currentTime);
+        }
+        foreach (var (_, value) in fallFish)
+        {
+            counter += TryAddFish(value, currentWeather, currentSeasonNumber, currentTime);
+        }
+        foreach (var (_, value) in winterFish)
+        {
+            counter += TryAddFish(value, currentWeather, currentSeasonNumber, currentTime);
+        }
+        LocalCatchableFish = new List<LocalFish>(FilteredCatchables.Values);
+        LocalUncatchableFish = new List<LocalFish>(FilteredUncatchables.Values);
+        if (counter == 0) IsThereFish = false; 
+        ModEntry.Log($"Out of {counter} local fish, {LocalCatchableFish.Count} are catchable and {LocalUncatchableFish.Count} are uncatchable.");
+    }
+
+    private int TryAddFish(List<string> fishList, string currentWeather, int currentSeasonNumber, int currentTime)
+    {
+        var counter = 0;
+        foreach (var fish in fishList)
         {
             FishInfos.TryGetValue(fish, out var fishInfo);
             if (fishInfo.Id is null) continue;
-            var qualifications = QualifyFish(fishInfo);
-            if (qualifications is not null && qualifications.Contains(IsFishCatchable.Yes))
+            var qualifications = QualifyFish(fishInfo, currentWeather, currentSeasonNumber, currentTime);
+            var localFish = new LocalFish(
+                qualifications.Contains(IsFishCatchable.Yes),
+                qualifications.Contains(IsFishCatchable.Season),
+                qualifications.Contains(IsFishCatchable.Time),
+                qualifications.Contains(IsFishCatchable.Weather),
+                fishInfo.GetCaughtStatus(Game1.player) is CaughtStatus.Caught,
+                fishInfo,
+                ItemRegistry.GetData(fishInfo.Id));
+            if (localFish.Catchable && !FilteredCatchables.ContainsKey(localFish.Name))
             {
-                LocalCatchableFish.Add(new LocalFish(
-                    true, 
-                    false, 
-                    false, 
-                    false, 
-                    fishInfo, 
-                    ItemRegistry.GetData(fishInfo.Id)));
-            } else if (qualifications != null)
+                counter++;
+                FilteredCatchables.Add(localFish.Name, localFish);
+            }
+            else if(!FilteredUncatchables.ContainsKey(localFish.Name) && !FilteredCatchables.ContainsKey(localFish.Name))
             {
-                LocalUncatchableFish.Add(new LocalFish(
-                    false, 
-                    qualifications.Contains(IsFishCatchable.Season), 
-                    qualifications.Contains(IsFishCatchable.Time), 
-                    qualifications.Contains(IsFishCatchable.Weather), 
-                    fishInfo, 
-                    ItemRegistry.GetData(fishInfo.Id)));
+                counter++;
+                FilteredUncatchables.Add(localFish.Name, localFish);
             }
         }
+        return counter;
     }
 
-    public List<IsFishCatchable>? QualifyFish(FishInfo fish)
+    private static List<IsFishCatchable> QualifyFish(FishInfo fish, string currentWeather, int currentSeasonNumber, int currentTime)
     {
-        var currentWeather = Game1.currentLocation.GetWeather().Weather;
-        var currentSeasonNumber = Game1.currentLocation.GetSeasonIndex();
         var currentSeason = currentSeasonNumber switch
         {
             0 => LuluSeason.Spring,
@@ -59,10 +98,20 @@ public class HudMenuData(Dictionary<string, FishInfo> fishInfos) : INotifyProper
             3 => LuluSeason.Winter,
             _ => LuluSeason.All
         };
-        var currentTime = Game1.timeOfDay;
+        var updatedWeather = currentWeather switch
+        {
+            "Rain" => FishWeather.Rain,
+            "GreenRain" => FishWeather.Rain,
+            "Storm" => FishWeather.Rain,
+            "Wind" => FishWeather.Sunny,
+            "Snow" => FishWeather.Sunny,
+            "Sun" => FishWeather.Sunny,
+            _ => FishWeather.Sunny
+        };
         var list = new List<IsFishCatchable>();
-        if (fish.CatchInfo is null) return null;
-        var requiredWeather = fish.CatchInfo.Value.Weather.ToString();
+        // Can be null if it's a Trap Fish or smth non-fish
+        if (fish.CatchInfo is null) return list;
+        var requiredWeather = fish.CatchInfo.Value.Weather;
         var requiredSeasons = fish.Seasons;
         var startTime = fish.CatchInfo.Value.Times[0].Start;
         var endTime = fish.CatchInfo.Value.Times[0].End;
@@ -71,11 +120,11 @@ public class HudMenuData(Dictionary<string, FishInfo> fishInfos) : INotifyProper
         {
             list.Add(IsFishCatchable.Time);
         }
-        if (!currentWeather.Equals(requiredWeather))
+        if (requiredWeather is not FishWeather.Any && !updatedWeather.Equals(requiredWeather))
         {
             list.Add(IsFishCatchable.Weather);
         }
-        if (!(requiredSeasons ?? []).Contains(currentSeason))
+        if (!(requiredSeasons ?? []).Contains(currentSeason) && !(requiredSeasons ?? []).Contains(LuluSeason.All))
         {
             list.Add(IsFishCatchable.Season);
         }

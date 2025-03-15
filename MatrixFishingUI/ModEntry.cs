@@ -1,8 +1,6 @@
-﻿using MatrixFishingUI.Framework;
-using MatrixFishingUI.Framework.Fish;
+﻿using MatrixFishingUI.Framework.Fish;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewUI.Framework;
 using StardewValley.Tools;
@@ -13,7 +11,6 @@ namespace MatrixFishingUI
     {
         private static ModConfig _config = null!;
         private static IMonitor? _monitor;
-        private readonly PerScreen<Lazy<GameLocation[]>> _locations = new(GetLocationsForCache);
         public static IViewEngine? ViewEngine;
         internal static FishManager Fish = null!;
         private bool HoldingRod = false;
@@ -44,6 +41,8 @@ namespace MatrixFishingUI
             helper.Events.World.LocationListChanged += OnLocationListChanged;
 
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+            helper.Events.Player.Warped += OnLocationChanged;
+            helper.Events.Player.InventoryChanged += OnInventoryChanged;
         }
         
         private void Display_RenderedHud(object? sender, RenderedHudEventArgs e)
@@ -258,21 +257,42 @@ namespace MatrixFishingUI
 
             Monitor.Log("GMCM Generated", LogLevel.Debug);
         }
+
+        private void OnLocationChanged(object? sender, WarpedEventArgs e)
+        {
+            Fish.RefreshFish();
+            ToggleHud();
+            ToggleHud();
+        }
+
+        private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
+        {
+            var flag = false;
+            foreach (var item in e.Added)
+            {
+                if (Fish.GetAllFish().ContainsKey(item.ItemId))
+                {
+                    flag = true;
+                }
+            }
+
+            if (!flag) return;
+            Fish.RefreshFish();
+            ToggleHud();
+            ToggleHud();
+        }
         
         private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
         {
             Fish.RefreshFish();
-            ResetLocationCache();
         }
         
         private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
         {
-            ResetLocationCache();
         }
         
         private void OnLocationListChanged(object? sender, LocationListChangedEventArgs e)
         {
-            ResetLocationCache();
         }
         
         private void OnButtonChanged(object? sender, ButtonsChangedEventArgs e)
@@ -320,7 +340,6 @@ namespace MatrixFishingUI
                     data = (HudMenuData)hudWidget.Context;
                     data.UpdateLocalFish();
                 }
-                LogTrace("Attempting HUD toggle On...");
             }
         }
         
@@ -348,7 +367,6 @@ namespace MatrixFishingUI
             if (Game1.player.CurrentTool is FishingRod || !HoldingRod) return;
             HoldingRod = false;
             ToggleHud();
-            LogTrace("Attempting HUD toggle off...");
         }
 
         private void OnOneSecondUpdateTicked(object? sender, OneSecondUpdateTickedEventArgs e)
@@ -386,21 +404,6 @@ namespace MatrixFishingUI
             ViewEngine?.RegisterSprites("Mods/Borealis.MatrixFishingUI/Sprites", "assets/sprites");
             ViewEngine?.EnableHotReloading();
             GenerateGMCM();
-        }
-        
-        private void ResetLocationCache()
-        {
-            if (_locations.Value.IsValueCreated)
-                _locations.Value = GetLocationsForCache();
-        }
-
-        /// <summary>Get a cached lookup of available locations.</summary>
-        private static Lazy<GameLocation[]> GetLocationsForCache()
-        {
-            return new Lazy<GameLocation[]>(() => Context.IsWorldReady
-                ? CommonHelper.GetAllLocations().ToArray()
-                : []
-            );
         }
 
         public static void Log(string input)

@@ -1,5 +1,38 @@
 {
   "mod-name": "ArgonMatrix Fishing UI",
   "controls.pressnewkey": "On Button Pressed",
-  "ui.title": "Lulu's Fishing UI"
+  "ui.title": "Lulu's Fishing UI",
+  
+  "ui.fishipedia.weather.rainy": "Rainy",
+  "ui.fishipedia.weather.sunny": "Sunny",
+  "ui.fishipedia.weather.any": "Any Weather",
+  "ui.fishipedia.weather.none": "No Weather",
+
+  "ui.fishipedia.time.time_available": "Time Available: ",
+  "ui.fishipedia.time.between": "Between ",
+  "ui.fishipedia.time.and": "and ",
+
+  "ui.fishipedia.titles.general": "General Information",
+  "ui.fishipedia.titles.trap": "Trap Information",
+  "ui.fishipedia.titles.catch": "Catch Information",
+  "ui.fishipedia.titles.locations": "Locations",
+  "ui.fishipedia.titles.pond": "Pond Information",
+  "ui.fishipedia.titles.items_produced": "Items Produced",
+
+  "ui.fishipedia.tooltips.legendary": "Legendary Fish",
+
+  "ui.fishipedia.labels.description": "Description: ",
+  "ui.fishipedia.labels.caught_status": "Fish Catch Status: ",
+  "ui.fishipedia.labels.min_size": "Minimum Size: ",
+  "ui.fishipedia.labels.max_size": "Maximum Size: ",
+  "ui.fishipedia.labels.inches": "in.",
+  "ui.fishipedia.labels.water_type": "Water Type: ",
+  "ui.fishipedia.labels.fish_caught": "Number Caught: ",
+  "ui.fishipedia.labels.fishing_level": "Fishing Level Required: ",
+  "ui.fishipedia.labels.biggest": "Biggest Caught: ",
+  "ui.fishipedia.labels.every_season": "Every Season",
+  "ui.fishipedia.labels.weather_required": "Weather Required: ",
+  "ui.fishipedia.labels.seasons": "Season(s) Available: ",
+  
+  "ui.hud.labels.no_fish": "No catchable fish in current location!"
 }
