@@ -1,4 +1,5 @@
 ﻿using MatrixFishingUI.Framework.Fish;
+using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -7,39 +8,30 @@ using StardewValley.Tools;
 
 namespace MatrixFishingUI
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class ModEntry : Mod
     {
         private static ModConfig _config = null!;
         private static IMonitor? _monitor;
         public static IViewEngine? ViewEngine;
         internal static FishManager Fish = null!;
-        private bool HoldingRod = false;
-        private IViewDrawable? hudWidget;
-        private int _timer = 0;
+        private bool _holdingRod;
+        private IViewDrawable? _hudWidget;
         
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
             _monitor = Monitor;
             Monitor.Log($"Started with menu key {_config.OpenMenuKey}.");
-            Fish = new(this);
+            Fish = new FishManager(this);
             I18n.Init(helper.Translation);
             
             // hook events
-            helper.Events.Display.Rendered += OnRendered;
             helper.Events.Display.MenuChanged += OnMenuChanged;
-
-            helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
             helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
-            helper.Events.GameLoop.Saving += OnSaving;
             helper.Events.GameLoop.UpdateTicked += OnUpdateTicked;
-            helper.Events.GameLoop.OneSecondUpdateTicked += OnOneSecondUpdateTicked;
             helper.Events.Display.RenderedHud += Display_RenderedHud;
-
             helper.Events.Input.ButtonsChanged += OnButtonChanged;
-
-            helper.Events.World.LocationListChanged += OnLocationListChanged;
-
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.Player.Warped += OnLocationChanged;
             helper.Events.Player.InventoryChanged += OnInventoryChanged;
@@ -47,7 +39,7 @@ namespace MatrixFishingUI
         
         private void Display_RenderedHud(object? sender, RenderedHudEventArgs e)
         {
-            hudWidget?.Draw(e.SpriteBatch, new(0, 100));
+            _hudWidget?.Draw(e.SpriteBatch, new Vector2(0, 100));
         }
         
         private void GenerateGMCM()
@@ -258,13 +250,13 @@ namespace MatrixFishingUI
             Monitor.Log("GMCM Generated", LogLevel.Debug);
         }
 
+        /// <summary>Raised after the player changes location (using any means).</summary>
         private void OnLocationChanged(object? sender, WarpedEventArgs e)
         {
-            Fish.RefreshFish();
-            ToggleHud();
-            ToggleHud();
+            UpdateHud();
         }
 
+        /// <summary>Raised when any item is added or removed from the player's inventory.</summary>
         private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
         {
             var flag = false;
@@ -277,7 +269,13 @@ namespace MatrixFishingUI
             }
 
             if (!flag) return;
+            UpdateHud();
+        }
+
+        private void UpdateHud()
+        {
             Fish.RefreshFish();
+            if (!_holdingRod) return;
             ToggleHud();
             ToggleHud();
         }
@@ -287,108 +285,63 @@ namespace MatrixFishingUI
             Fish.RefreshFish();
         }
         
-        private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
-        {
-        }
-        
-        private void OnLocationListChanged(object? sender, LocationListChangedEventArgs e)
-        {
-        }
-        
         private void OnButtonChanged(object? sender, ButtonsChangedEventArgs e)
         {
             // open menu
-            if (_config.OpenMenuKey.JustPressed())
+            if (!_config.OpenMenuKey.JustPressed()) return;
+            if (!Context.IsPlayerFree || Game1.currentMinigame != null)
             {
-                if (!Context.IsPlayerFree || Game1.currentMinigame != null)
-                {
-                    if (Game1.currentMinigame != null)
-                        Monitor.Log($"Received menu open key, but a '{Game1.currentMinigame.GetType().Name}' minigame is active.");
-                    else if (Game1.eventUp)
-                        Monitor.Log("Received menu open key, but an event is active.");
-                    else if (Game1.activeClickableMenu != null)
-                        Monitor.Log($"Received menu open key, but a '{Game1.activeClickableMenu.GetType().Name}' menu is already open.");
-                    else
-                        Monitor.Log("Received menu open key, but the player isn't free.");
-                }
-
+                if (Game1.currentMinigame != null)
+                    Monitor.Log($"Received menu open key, but a '{Game1.currentMinigame.GetType().Name}' minigame is active.");
+                else if (Game1.eventUp)
+                    Monitor.Log("Received menu open key, but an event is active.");
+                else if (Game1.activeClickableMenu != null)
+                    Monitor.Log($"Received menu open key, but a '{Game1.activeClickableMenu.GetType().Name}' menu is already open.");
                 else
-                {
-                    Monitor.Log("Received menu open key.");
-                    var context = FishMenuData.GetFish();
-                    Game1.activeClickableMenu = ViewEngine?.CreateMenuFromAsset(
-                        "Mods/Borealis.MatrixFishingUI/Views/ScrollingItemGrid",
-                        context);
-                }
+                    Monitor.Log("Received menu open key, but the player isn't free.");
+            }
+            else
+            {
+                Monitor.Log("Received menu open key.");
+                var context = FishMenuData.GetFish();
+                Game1.activeClickableMenu = ViewEngine?.CreateMenuFromAsset(
+                    "Mods/Borealis.MatrixFishingUI/Views/ScrollingItemGrid",
+                    context);
             }
         }
         
         private void ToggleHud()
         {
-            if (hudWidget is not null)
+            if (_hudWidget is not null)
             {
-                hudWidget.Dispose();
-                hudWidget = null;
+                _hudWidget.Dispose();
+                _hudWidget = null;
             }
             else
             {
-                hudWidget = ViewEngine?.CreateDrawableFromAsset("Mods/Borealis.MatrixFishingUI/Views/Hud");
-                if (hudWidget != null) hudWidget.Context = new HudMenuData(Fish.GetAllFish());
-                HudMenuData? data;
-                if (hudWidget?.Context != null)
-                {
-                    data = (HudMenuData)hudWidget.Context;
-                    data.UpdateLocalFish();
-                }
+                _hudWidget = ViewEngine?.CreateDrawableFromAsset("Mods/Borealis.MatrixFishingUI/Views/Hud");
+                if (_hudWidget is null) return;
+                var data = new HudMenuData(Fish.GetAllFish());
+                data.UpdateLocalFish();
+                _hudWidget.Context = data;
+                // TODO: If code explodes this is why
             }
-        }
-        
-        private void OnRendered(object? sender, RenderedEventArgs e)
-        {
-            if (!Context.IsWorldReady)
-                return;
         }
 
         /// <summary>Raised after the game state is updated (≈60 times per second).</summary>
         private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
-            if (!Context.IsWorldReady)
-                return;
-            switch (Game1.player.CurrentTool)
+            if (!Context.IsWorldReady) return;
+            var isHoldingRod = Game1.player.CurrentTool is FishingRod;
+            if (isHoldingRod && !_holdingRod)
             {
-                case FishingRod when !HoldingRod:
-                    HoldingRod = true;
-                    ToggleHud();
-                    return;
-                case FishingRod when HoldingRod:
-                    break;
-            }
-
-            if (Game1.player.CurrentTool is FishingRod || !HoldingRod) return;
-            HoldingRod = false;
-            ToggleHud();
-        }
-
-        private void OnOneSecondUpdateTicked(object? sender, OneSecondUpdateTickedEventArgs e)
-        {
-            if (!Context.IsWorldReady)
-                return;
-            if (_timer < 10)
+                _holdingRod = true;
+                ToggleHud();
+            } else if (!isHoldingRod && _holdingRod)
             {
-                _timer++;
+                _holdingRod = false;
+                ToggleHud();
             }
-            else
-            {
-                _timer = 0;
-                if (hudWidget?.Context == null) return;
-                var context = (HudMenuData)hudWidget.Context;
-                context.UpdateLocalFish();
-            }
-        }
-
-        /// <inheritdoc cref="IGameLoopEvents.Saving"/>
-        private void OnSaving(object? sender, SavingEventArgs e)
-        {
         }
 
         /// <summary>Raised after a game menu is opened, closed, or replaced.</summary>
@@ -402,7 +355,9 @@ namespace MatrixFishingUI
             ViewEngine = Helper.ModRegistry.GetApi<IViewEngine>("focustense.StardewUI");
             ViewEngine?.RegisterViews("Mods/Borealis.MatrixFishingUI/Views", "assets/views");
             ViewEngine?.RegisterSprites("Mods/Borealis.MatrixFishingUI/Sprites", "assets/sprites");
+#if DEBUG
             ViewEngine?.EnableHotReloading();
+#endif
             GenerateGMCM();
         }
 

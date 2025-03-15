@@ -10,7 +10,7 @@ public class FishManager
     
     public FishManager(ModEntry mod)
     {
-        _providers.Add(new VanillaProvider(mod));
+        _providers.Add(new VanillaProvider());
     }
     
     public void RefreshFish() {
@@ -57,47 +57,7 @@ public class FishManager
     
     #region Locations
 
-    public void AddFish(SubLocation loc, int[] seasons, string fish, Dictionary<string, Dictionary<SubLocation, List<int>>> result ) {
-        if (!result.TryGetValue(fish, out var entry)) {
-            result[fish] = new() {
-                [loc] = seasons.ToList(),
-            };
-            return;
-        }
-        if (!entry.TryGetValue(loc, out var slist)) {
-            entry[loc] = seasons.ToList();
-            return;
-        }
-        foreach(int season in seasons) {
-            if (!slist.Contains(season))
-                slist.Add(season);
-        }
-    }
-
-    public void RemoveFish(SubLocation loc, int[] seasons, string fish, Dictionary<string, Dictionary<SubLocation, List<int>>> result) {
-        if (!result.TryGetValue(fish, out var entry))
-            return;
-
-        if (!entry.TryGetValue(loc, out var slist))
-            return;
-
-        for (int i = slist.Count - 1; i >= 0; i--) {
-            if (seasons.Contains(slist[i]))
-                slist.RemoveAt(i);
-        }
-
-        if (slist.Count > 0)
-            return;
-
-        entry.Remove(loc);
-
-        if (entry.Count > 0)
-            return;
-
-        result.Remove(fish);
-    }
-
-    public Dictionary<string, Dictionary<SubLocation, List<int>>> GetFishLocations() {
+    public static Dictionary<string, Dictionary<SubLocation, List<int>>> GetFishLocations() {
 
         var result = FishHelper.GetFishLocations();
         return result;

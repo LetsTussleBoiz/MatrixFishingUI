@@ -7,78 +7,47 @@ using StardewValley.GameData.FishPonds;
 namespace MatrixFishingUI.Framework.Fish;
 
 public class VanillaProvider : IFishProvider {
-
-	public static readonly Regex WhitespaceRegex = new(@"\s\s+|\n", RegexOptions.Compiled);
-
-	public readonly ModEntry Mod;
-
-	public VanillaProvider(ModEntry mod) {
-		Mod = mod;
-	}
+	private static readonly Regex WhitespaceRegex = new(@"\s\s+|\n", RegexOptions.Compiled);
 
 	public string Name => nameof(VanillaProvider);
 	public int Priority => 0;
+	private static readonly KeyValuePair<string, string>[] LegendaryPairs = [
+		// Son of Crimsonfish
+		new("898", "(O)159"),
+		// Ms. Angler
+		new("899", "(O)160"),
+		// The Legend II
+		new("900", "(O)163"),
+		// Radioactive Carp
+		new("901", "(O)682"),
+		// Glacierfish Jr.
+		new("902", "(O)775")
+	];
 
 	public IEnumerable<FishInfo> GetFish() {
-		Dictionary<string, string> data = Game1.content.Load<Dictionary<string, string>>(@"Data\Fish");
-		List<FishInfo> result = new();
-		Dictionary<string, Dictionary<SubLocation, List<int>>> locations = ModEntry.Fish.GetFishLocations();
-		List<FishPondData> pondData = Game1.content.Load<List<FishPondData>>(@"Data\FishPondData");
+		var data = Game1.content.Load<Dictionary<string, string>>(@"Data\Fish");
+		List<FishInfo> result = [];
+		var locations = FishManager.GetFishLocations();
+		var pondData = Game1.content.Load<List<FishPondData>>(@"Data\FishPondData");
 
-		foreach (var entry in data) {
-			locations.TryGetValue("(O)"+entry.Key, out Dictionary<SubLocation, List<int>>? locs);
+		foreach (var entry in data)
+		{
+			var key = $"(O){entry.Key}";
+			locations.TryGetValue(key, out var fishLocations);
 			try
 			{
-				var step = locs ?? [];
-				if (FishHelper.SkipFish(Game1.player, "(O)"+entry.Key))
+				if (FishHelper.SkipFish(Game1.player, key))
 				{
-					switch ("(O)"+entry.Key)
+					foreach (var pair in LegendaryPairs)
 					{
-						case "(O)898":
-							locations.TryGetValue("(O)159", out Dictionary<SubLocation, List<int>>? crimsonlocs);
-							step = crimsonlocs ?? [];
-							foreach (var pair in step)
-							{
-								ModEntry.Fish.AddFish(pair.Key, [(int)LuluSeason.All],"(O)898",locations);
-							}
-							break;
-						case "(O)899":
-							locations.TryGetValue("(O)160", out Dictionary<SubLocation, List<int>>? anglerlocs);
-							step = anglerlocs ?? [];
-							foreach (var pair in step)
-							{
-								ModEntry.Fish.AddFish(pair.Key, [(int)LuluSeason.All],"(O)899",locations);
-							}
-							break;
-						case "(O)900":
-							locations.TryGetValue("(O)163", out Dictionary<SubLocation, List<int>>? legendlocs);
-							step = legendlocs ?? [];
-							foreach (var pair in step)
-							{
-								ModEntry.Fish.AddFish(pair.Key, [(int)LuluSeason.All],"(O)900",locations);
-							}
-							break;
-						case "(O)901":
-							locations.TryGetValue("(O)682", out Dictionary<SubLocation, List<int>>? mutantlocs);
-							step = mutantlocs ?? [];
-							foreach (var pair in step)
-							{
-								ModEntry.Fish.AddFish(pair.Key, [(int)LuluSeason.All],"(O)901",locations);
-							}
-							break;
-						case "(O)902":
-							locations.TryGetValue("(O)775", out Dictionary<SubLocation, List<int>>? glacierlocs);
-							step = glacierlocs ?? [];
-							foreach (var pair in step)
-							{
-								ModEntry.Fish.AddFish(pair.Key, [(int)LuluSeason.All],"(O)902",locations);
-							}
-							break;
+						if (!pair.Key.Equals(entry.Key, StringComparison.OrdinalIgnoreCase)) continue;
+						locations.TryGetValue(pair.Value, out fishLocations);
+						break;
 					}
 				}
-				var info = GetFishInfo("(O)"+entry.Key, entry.Value, step, pondData);
+				var info = GetFishInfo(key, entry.Value, fishLocations ?? [], pondData);
 				if (info.HasValue) result.Add(info.Value);
-			} catch(Exception ex) {
+			} catch(Exception) {
 				ModEntry.LogWarn($"Unable to process fish: {entry.Key}");
 			}
 		}
