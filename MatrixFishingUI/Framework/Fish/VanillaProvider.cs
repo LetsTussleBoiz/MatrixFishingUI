@@ -13,39 +13,40 @@ public class VanillaProvider : IFishProvider {
 	public int Priority => 0;
 	private static readonly KeyValuePair<string, string>[] LegendaryPairs = [
 		// Son of Crimsonfish
-		new("898", "(O)159"),
+		new(new FishId("898"), new FishId("159")),
 		// Ms. Angler
-		new("899", "(O)160"),
+		new(new FishId("899"), new FishId("160")),
 		// The Legend II
-		new("900", "(O)163"),
+		new(new FishId("900"), new FishId("163")),
 		// Radioactive Carp
-		new("901", "(O)682"),
+		new(new FishId("901"), new FishId("682")),
 		// Glacierfish Jr.
-		new("902", "(O)775")
+		new(new FishId("902"), new FishId("775"))
 	];
 
 	public IEnumerable<FishInfo> GetFish() {
 		var data = Game1.content.Load<Dictionary<string, string>>(@"Data\Fish");
 		List<FishInfo> result = [];
-		var locations = FishManager.GetFishLocations();
+		var fishGlossary = FishHelper.GetFishSpawningConditions();
 		var pondData = Game1.content.Load<List<FishPondData>>(@"Data\FishPondData");
 
 		foreach (var entry in data)
 		{
-			var key = $"(O){entry.Key}";
-			locations.TryGetValue(key, out var fishLocations);
+			var fishId = new FishId(entry.Key);
+
+			fishGlossary.TryGetValue(fishId, out var fishLocations);
 			try
 			{
-				if (FishHelper.SkipFish(Game1.player, key))
+				if (FishHelper.SkipFish(Game1.player, fishId))
 				{
 					foreach (var pair in LegendaryPairs)
 					{
-						if (!pair.Key.Equals(entry.Key, StringComparison.OrdinalIgnoreCase)) continue;
-						locations.TryGetValue(pair.Value, out fishLocations);
+						if (!pair.Key.Value.Equals(entry.Key, StringComparison.OrdinalIgnoreCase)) continue;
+						fishGlossary.TryGetValue(pair.Value, out fishLocations);
 						break;
 					}
 				}
-				var info = GetFishInfo(key, entry.Value, fishLocations ?? [], pondData);
+				var info = GetFishInfo(fishId.Value, entry.Value, fishLocations ?? [], pondData);
 				if (info.HasValue) result.Add(info.Value);
 			} catch(Exception) {
 				ModEntry.LogWarn($"Unable to process fish: {entry.Key}");
@@ -54,12 +55,13 @@ public class VanillaProvider : IFishProvider {
 		return result;
 	}
 
-	private static FishInfo? GetFishInfo(string id, string data, Dictionary<SubLocation, List<int>> locations, List<FishPondData> pondData) {
+	//TODO: Optimize this method
+	private static FishInfo? GetFishInfo(string id, string data, List<SpawningCondition> locations, List<FishPondData> pondData) {
 		if (string.IsNullOrEmpty(data))
 			return null;
 
 		string[] bits = data.Split('/');
-		SObject obj = new SObject(id.Substring(3), 1);
+		SObject obj = new SObject(id, 1);
 
 		if (bits.Length < 7 || obj is null)
 			return null;

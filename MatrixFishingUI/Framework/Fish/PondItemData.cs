@@ -44,7 +44,9 @@ public partial class PondItemData : INotifyPropertyChanged
 
         return result is null ? string.Empty : $"[Sale Price: {result.Item.salePrice()}g] ";
     }
-    
+
+    #region PropertyChanges
+
     public event PropertyChangedEventHandler? PropertyChanged;
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
@@ -58,6 +60,8 @@ public partial class PondItemData : INotifyPropertyChanged
         OnPropertyChanged(propertyName);
         return true;
     }
+
+    #endregion
 }
 
 public record PondInfoModel(

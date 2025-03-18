@@ -5,7 +5,7 @@ namespace MatrixFishingUI.Framework.Fish;
 public class FishManager
 {
     private readonly List<IFishProvider> _providers = new();
-    private Dictionary<string,FishInfo> _fish = new();
+    private Dictionary<FishId,FishInfo> _fish = new();
     private bool _loaded;
     
     public FishManager(ModEntry mod)
@@ -13,9 +13,10 @@ public class FishManager
         _providers.Add(new VanillaProvider());
     }
     
+    // TODO: Find alternative for refreshing fish without changing the entire dictionary (Like CatchFish mb?)
     public void RefreshFish() {
 
-        Dictionary<string, FishInfo> working = new();
+        Dictionary<FishId, FishInfo> working = new();
 
         foreach (IFishProvider provider in _providers) {
             int provided = 0;
@@ -29,9 +30,10 @@ public class FishManager
             }
 
             if (fish is not null)
-                foreach (FishInfo info in fish) {
-                    if (!working.ContainsKey(info.Id)) {
-                        working[info.Id] = info;
+                foreach (var info in fish)
+                {
+                    var id = new FishId(info.Id);
+                    if (working.TryAdd(id, info)) {
                         provided++;
                     }
                 }
@@ -44,24 +46,14 @@ public class FishManager
         ModEntry.Log($"Loaded {_fish.Count} fish from {_providers.Count} providers.");
     }
 
-    public FishInfo GetFish(string id)
+    public FishInfo GetFish(FishId id)
     {
-        _fish.TryGetValue($"(O){id}", out var value);
+        _fish.TryGetValue(new FishId(id.Value), out var value);
         return value;
     }
 
-    public Dictionary<string, FishInfo> GetAllFish()
+    public Dictionary<FishId, FishInfo> GetAllFish()
     {
         return _fish;
     }
-    
-    #region Locations
-
-    public static Dictionary<string, Dictionary<SubLocation, List<int>>> GetFishLocations() {
-
-        var result = FishHelper.GetFishLocations();
-        return result;
-    }
-
-    #endregion
 }

@@ -5,10 +5,10 @@ using StardewValley;
 
 namespace MatrixFishingUI.Framework.Fish;
 
-public class HudMenuData(Dictionary<string, FishInfo> fishInfos) : INotifyPropertyChanged
+public class HudMenuData() : INotifyPropertyChanged
 {
     // ReSharper disable once MemberCanBePrivate.Global
-    public Dictionary<string,FishInfo> FishInfos { get; set; } = fishInfos;
+    public Dictionary<FishId,FishInfo> FishInfos { get; set; } = [];
     public string Title { get; set; } = "Fish Helper";
     // ReSharper disable once MemberCanBePrivate.Global
     public Dictionary<string, LocalFish> FilteredCatchables { get; set; } = [];
@@ -20,35 +20,23 @@ public class HudMenuData(Dictionary<string, FishInfo> fishInfos) : INotifyProper
     public List<LocalFish> LocalUncatchableFish { get; set; } = [];
     public bool IsThereFish { get; set; }
 
-    public void UpdateLocalFish()
+    //TODO: Optimize this method
+    public void UpdateLocalFish(Dictionary<FishId, FishInfo> fishInfos)
     {
+        FishInfos = fishInfos;
         IsThereFish = false;
         FilteredCatchables.Clear();
         FilteredUncatchables.Clear();
         LocalCatchableFish.Clear();
         LocalUncatchableFish.Clear();
-        var springFish = FishHelper.GetLocationFish(Game1.player.currentLocation, 0);
-        var summerFish = FishHelper.GetLocationFish(Game1.player.currentLocation, 1);
-        var fallFish = FishHelper.GetLocationFish(Game1.player.currentLocation, 2);
-        var winterFish = FishHelper.GetLocationFish(Game1.player.currentLocation, 3);
+        var fishByArea = FishHelper.GetFishByArea(Game1.player.currentLocation);
+        if (fishByArea is null) return;
         IsThereFish = true;
         var currentWeather = Game1.currentLocation.GetWeather().Weather;
         var currentSeasonNumber = Game1.currentLocation.GetSeasonIndex();
         var currentTime = Game1.timeOfDay;
         var counter = 0;
-        foreach (var (_, value) in springFish)
-        {
-            counter += TryAddFish(value, currentWeather, currentSeasonNumber, currentTime);
-        }
-        foreach (var (_, value) in summerFish)
-        {
-            counter += TryAddFish(value, currentWeather, currentSeasonNumber, currentTime);
-        }
-        foreach (var (_, value) in fallFish)
-        {
-            counter += TryAddFish(value, currentWeather, currentSeasonNumber, currentTime);
-        }
-        foreach (var (_, value) in winterFish)
+        foreach (var (_, value) in fishByArea)
         {
             counter += TryAddFish(value, currentWeather, currentSeasonNumber, currentTime);
         }
@@ -58,7 +46,7 @@ public class HudMenuData(Dictionary<string, FishInfo> fishInfos) : INotifyProper
         ModEntry.Log($"Out of {counter} local fish, {LocalCatchableFish.Count} are catchable and {LocalUncatchableFish.Count} are uncatchable.");
     }
 
-    private int TryAddFish(List<string> fishList, string currentWeather, int currentSeasonNumber, int currentTime)
+    private int TryAddFish(FishId[] fishList, string currentWeather, int currentSeasonNumber, int currentTime)
     {
         var counter = 0;
         foreach (var fish in fishList)
@@ -134,12 +122,16 @@ public class HudMenuData(Dictionary<string, FishInfo> fishInfos) : INotifyProper
         }
         return list;
     }
-    // <----------------------THE GREAT DIVIDER----------------------------> //
+
+    #region PropertyChanges
+
     public event PropertyChangedEventHandler? PropertyChanged;
+
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+
     protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
@@ -147,6 +139,8 @@ public class HudMenuData(Dictionary<string, FishInfo> fishInfos) : INotifyProper
         OnPropertyChanged(propertyName);
         return true;
     }
+
+    #endregion
 }
 
 public enum IsFishCatchable

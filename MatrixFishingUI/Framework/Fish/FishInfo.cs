@@ -67,7 +67,7 @@ public record struct FishInfo(
 {
 	public CaughtStatus GetCaughtStatus(Farmer player)
 	{
-		if (!player.fishCaught.TryGetValue(Id, out var value)) return CaughtStatus.Uncaught;
+		if (!player.fishCaught.TryGetValue(ItemRegistry.QualifyItemId(Id), out var value)) return CaughtStatus.Uncaught;
 		if (value.Length <= 0) return CaughtStatus.Uncaught;
 		return value[0] > 0 ? CaughtStatus.Caught : CaughtStatus.Uncaught;
 	}
@@ -91,7 +91,7 @@ public record struct TrapFishInfo(
 );
 
 public record struct CatchFishInfo(
-	Dictionary<SubLocation, List<int>>? Locations,
+	List<SpawningCondition>? Locations,
 	TimeOfDay[] Times,
 	FishWeather Weather,
 	int Minlevel

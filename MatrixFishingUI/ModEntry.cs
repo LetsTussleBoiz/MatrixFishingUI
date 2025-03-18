@@ -262,7 +262,7 @@ namespace MatrixFishingUI
             var flag = false;
             foreach (var item in e.Added)
             {
-                if (Fish.GetAllFish().ContainsKey(item.ItemId))
+                if (Fish.GetAllFish().ContainsKey(new FishId(item.ItemId)))
                 {
                     flag = true;
                 }
@@ -321,8 +321,8 @@ namespace MatrixFishingUI
             {
                 _hudWidget = ViewEngine?.CreateDrawableFromAsset("Mods/Borealis.MatrixFishingUI/Views/Hud");
                 if (_hudWidget is null) return;
-                var data = new HudMenuData(Fish.GetAllFish());
-                data.UpdateLocalFish();
+                var data = new HudMenuData();
+                data.UpdateLocalFish(Fish.GetAllFish());
                 _hudWidget.Context = data;
                 // TODO: If code explodes this is why
             }

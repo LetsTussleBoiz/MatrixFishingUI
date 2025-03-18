@@ -36,6 +36,7 @@ public partial class FishInfoData : INotifyPropertyChanged
     public CaughtStatus CaughtStatus { get; set; }
     public int NumberCaught { get; set; }
     public int BiggestCatch { get; set; }
+    // TODO: Optimize FishInfo indexing
     [Notify] private FishInfo previous;
     [Notify] private FishInfo current;
     [Notify] private FishInfo next;
@@ -49,6 +50,11 @@ public partial class FishInfoData : INotifyPropertyChanged
     
     public static FishInfoData GetSingleFish(FishInfo fish, FishInfo prevFish, FishInfo nextFish, int index)
     {
+        var locations = new List<LocationArea>();
+        if (fish.CatchInfo is not null)
+        {
+            locations.AddRange(from spawningCondition in fish.CatchInfo.Value.Locations ?? [] select spawningCondition.Location);
+        }
         return new FishInfoData
         {
             Fish = fish,
@@ -61,7 +67,7 @@ public partial class FishInfoData : INotifyPropertyChanged
             Seasons = fish.Seasons,
             FishType = fish.FishType,
             WaterType = fish.TrapInfo?.Location ?? WaterType.None,
-            Locations = GetLocations(fish.CatchInfo?.Locations?.Keys.ToList()),
+            Locations = GetLocations(locations),
             StartTime = FormatTime(fish.CatchInfo?.Times[0].Start),
             EndTime = FormatTime(fish.CatchInfo?.Times[0].End),
             FishWeather = fish.CatchInfo?.Weather,
@@ -85,7 +91,7 @@ public partial class FishInfoData : INotifyPropertyChanged
     {
         var fishCatalogue = FishMenuData.GetFish().Fish;
         var localIndex = Index == 0 ? fishCatalogue.Count - 1 : Index - 1;
-        var prevFish = ModEntry.Fish.GetFish(localIndex == 0 ? fishCatalogue[^1].ItemId : FishMenuData.GetFish().Fish[localIndex-1].ItemId);
+        var prevFish = ModEntry.Fish.GetFish(localIndex == 0 ? new FishId(fishCatalogue[^1].ItemId) : new FishId(FishMenuData.GetFish().Fish[localIndex-1].ItemId));
         var context = GetSingleFish(Previous, prevFish, Current, localIndex);
         ViewEngine.ChangeChildMenu("Mods/Borealis.MatrixFishingUI/Views/TestView", context);
     }
@@ -95,7 +101,7 @@ public partial class FishInfoData : INotifyPropertyChanged
     {
         var fishCatalogue = FishMenuData.GetFish().Fish;
         var localIndex = Index == fishCatalogue.Count - 1 ? 0 : Index + 1;
-        var nextFish = ModEntry.Fish.GetFish(localIndex == fishCatalogue.Count - 1 ? fishCatalogue[0].ItemId : FishMenuData.GetFish().Fish[localIndex+1].ItemId);
+        var nextFish = ModEntry.Fish.GetFish(localIndex == fishCatalogue.Count - 1 ? new FishId(fishCatalogue[0].ItemId) : new FishId(FishMenuData.GetFish().Fish[localIndex+1].ItemId));
         var context = GetSingleFish(Next, Current, nextFish, localIndex);
         ViewEngine.ChangeChildMenu("Mods/Borealis.MatrixFishingUI/Views/TestView", context);
     }
@@ -124,22 +130,23 @@ public partial class FishInfoData : INotifyPropertyChanged
         return $"{timeEdit}:00am ";
     }
 
-    private static List<string> GetLocations(List<SubLocation>? list)
+    private static List<string> GetLocations(List<LocationArea>? list)
     {
         var toReturn = new List<string>();
         if (list is null) return toReturn;
-        foreach (var sublocation in list)
-        {
-            if (sublocation.Location != null) toReturn.Add(sublocation.Location.DisplayName);
-        }
+        toReturn.AddRange(list.Select(locationArea => locationArea.LocationName));
         return toReturn;
     }
 
+    #region PropertyChanges
+
     public event PropertyChangedEventHandler? PropertyChanged;
+
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+
     protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
@@ -147,6 +154,8 @@ public partial class FishInfoData : INotifyPropertyChanged
         OnPropertyChanged(propertyName);
         return true;
     }
+
+    #endregion
 }
 
 public enum FishInfoTab { General, CatchInfo, PondInfo }

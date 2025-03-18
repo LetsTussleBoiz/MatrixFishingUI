@@ -1,365 +1,188 @@
-#nullable enable
-
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using MatrixFishingUI.Framework.Models;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.GameData.Locations;
-using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
 namespace MatrixFishingUI.Framework.Fish;
 
-public static class FishHelper {
+public static class FishHelper
+{
 
-	public static bool SkipLocation(string key) {
-		switch(key) {
-			case "fishingGame":
-			case "Temp":
-			case "BeachNightMarket":
-			case "IslandSecret":
-			case "Backwoods":
-				return true;
-		}
+    public static Dictionary<FishId, List<SpawningCondition>> GetFishSpawningConditions()
+    {
+        var result = new Dictionary<FishId, List<SpawningCondition>>();
+        var locations = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations");
+        foreach (var location in locations)
+        {
+            var (locationName, locationData) = location;
+            if (SkipLocation(locationName)) continue;
+            
+            var fishSpawningConditions = GetFishSpawningConditions(locationData, locationName);
+            foreach (var kv in fishSpawningConditions)
+            {
+                var (fishId, spawningCondition) = kv;
 
-		return false;
-	}
+                if (!result.TryGetValue(fishId, out var spawningConditions))
+                {
+                    spawningConditions = [];
+                    result[fishId] = spawningConditions;
+                }
 
-	public static bool SkipFish(Farmer who, string id) {
-		who ??= Game1.player;
+                spawningConditions.AddRange(spawningCondition);
+            }
+        }
+        
+        return result;
+    }
 
-		switch(id) {
-			case "(O)898":
-			case "(O)899":
-			case "(O)900":
-			case "(O)901":
-			case "(O)902":
-				return ! who.team.SpecialOrderRuleActive("LEGENDARY_FAMILY");
-		}
+    private static Dictionary<FishId, List<SpawningCondition>> GetFishSpawningConditions(LocationData locationData, string locationName)
+    {
+        var allSeasons = Enum.GetValues<Season>().ToHashSet();
+        var result = new Dictionary<FishId, List<SpawningCondition>>();
+        foreach (var fish in locationData.Fish)
+        {
+            if (fish.Season is not null)
+            {
+                AddSpawningCondition([fish.Season.Value], fish);
+                continue;
+            }
 
-		return false;
-	}
+            var conditionHasSeason = fish.Condition is not null &&
+                (fish.Condition.Contains("LOCATION_SEASON", StringComparison.OrdinalIgnoreCase) ||
+                 fish.Condition.Contains("SEASON", StringComparison.OrdinalIgnoreCase));
 
-	public static WaterType GetTrapWaterType(GameLocation location) {
-		if (location is Farm farm) {
-			// Based on logic from Farm
-			if (farm.map.Properties.ContainsKey("FarmOceanCrabPotOverride"))
-				return WaterType.Ocean;
+            if (!conditionHasSeason)
+            {
+                AddSpawningCondition(allSeasons, fish);
+            } else
+            {
+                var parsedSeasons = ParseCondition(fish.Condition!);
+                if (parsedSeasons is null)
+                {
+                    ModEntry.LogWarn($"Failed to Parse Condition for {fish.ObjectDisplayName}: {fish.Condition}");
+                    continue;
+                }
+                AddSpawningCondition(parsedSeasons, fish);
+            }
+        }
 
-			// Farm 6 has both depending on coordinates.
-			if (Game1.whichFarm == 6)
-				return WaterType.Freshwater | WaterType.Ocean;
+        return result;
 
-			return WaterType.Freshwater;
-		}
+        void AddSpawningCondition(HashSet<Season> seasons, SpawnFishData fish)
+        {
+            var metadata = ItemRegistry.GetMetadata(fish.Id);
+            var id = new FishId(metadata.LocalItemId);
 
-		// Ginger Island West
-		if (location is IslandWest)
-			return WaterType.Freshwater | WaterType.Ocean;
+            if (!result.TryGetValue(id, out var spawningConditions))
+            {
+                spawningConditions = [];
+                result[id] = spawningConditions;
+            }
 
-		// Beach
-		if (location is Beach)
-			return WaterType.Ocean;
+            spawningConditions.Add(new SpawningCondition(new LocationArea(locationName, fish.FishAreaId), seasons));
+        }
+    }
 
-		// For everything else, just ask it for (0, 0)
+    private static HashSet<Season>? ParseCondition(string conditionQuery)
+    {
+        var conditions = conditionQuery.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var result = new HashSet<Season>();
+        foreach (var condition in conditions)
+        {
+            var split = condition.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (!split[0].Equals("LOCATION_SEASON", StringComparison.OrdinalIgnoreCase) && !split[0].Equals("SEASON", StringComparison.OrdinalIgnoreCase)) continue;
+            for (var i = 1; i < split.Length; i++)
+            {
+                var rawSeason = split[i];
+                if(rawSeason.Equals("Here", StringComparison.OrdinalIgnoreCase)) continue;
+                if (rawSeason.Equals("spring", StringComparison.OrdinalIgnoreCase)) result.Add(Season.Spring);
+                else if (rawSeason.Equals("summer", StringComparison.OrdinalIgnoreCase)) result.Add(Season.Summer);
+                else if (rawSeason.Equals("fall", StringComparison.OrdinalIgnoreCase)) result.Add(Season.Fall);
+                else if (rawSeason.Equals("winter", StringComparison.OrdinalIgnoreCase)) result.Add(Season.Winter);
+                else ModEntry.LogError($"Unknown Season caught when parsing: {conditionQuery}, Split: {rawSeason}");
+            }
+        }
+        
 
-		var layer = location.map?.Layers?.First();
-		int width = layer?.LayerWidth ?? 0;
-		int height = layer?.LayerHeight ?? 0;
+        return result.Count == 0 ? null : result;
+    }
+    
+    private static bool SkipLocation(string key)
+    {
+        return key switch
+        {
+            "fishingGame" or "Default" or "Temp" or "BeachNightMarket" or "IslandSecret" or "Backwoods" => true,
+            _ => false
+        };
+    }
+    
+    public static bool SkipFish(Farmer farmer, FishId id)
+    {
+        return id.Value switch
+        {
+            "898" or "899" or "900" or "901" or "902" => !farmer.team.SpecialOrderRuleActive("LEGENDARY_FAMILY"),
+            _ => false
+        };
+    }
 
-		if (width == 0 || height == 0)
-			return location.catchOceanCrabPotFishFromThisSpot(0, 0)
-				? WaterType.Ocean : WaterType.Freshwater;
+    public static Dictionary<LocationArea, FishId[]>? GetFishByArea(GameLocation location)
+    {
+        if (!TryGetLocationData(location, out var locationName, out var locationData)) return null;
+        var fishSpawningConditions = GetFishSpawningConditions(locationData, locationName);
 
-		WaterType result = WaterType.None;
+        return fishSpawningConditions
+            .SelectMany(kv => kv.Value.Select(spawningCondition => new KeyValuePair<FishId, SpawningCondition>(kv.Key, spawningCondition)))
+            .GroupBy(kv => kv.Value.Location)
+            .ToDictionary(group => group.Key, group => group.Select(kv => kv.Key).ToArray());
+    }
 
-		int xStep = Math.Clamp(width / 10, 1, 15);
-		int yStep = Math.Clamp(height / 10, 1, 15);
+    private static bool TryGetLocationData(GameLocation gameLocation,
+        out string locationName,
+        [NotNullWhen(true)] out LocationData? locationData)
+    {
+        var locations = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations");
+        locationName = gameLocation.Name;
+        if (locationName.Equals("BeachNightMarket")) locationName = "Beach";
+        return locations.TryGetValue(locationName, out locationData);
+    }
+    
+    public static SObject GetRoeForFish(SObject fish) {
+        var color = TailoringMenu.GetDyeColor(fish) ?? Color.Orange;
+        if (fish.ParentSheetIndex == 698)
+            color = new Color(61, 55, 42);
 
-		for (int x = 0; x < width; x += xStep) {
-			for (int y = 0; y < height; y += yStep) {
-				if (location.catchOceanCrabPotFishFromThisSpot(x, y))
-					result |= WaterType.Ocean;
-				else
-					result |= WaterType.Freshwater;
-			}
-		}
+        var result = new ColoredObject("812", 1, color);
+        result.name = fish.Name + " Roe";
+        result.preserve.Value = SObject.PreserveType.Roe;
+        result.preservedParentSheetIndex.Value = fish.QualifiedItemId;
+        result.Price += fish.sellToStorePrice() / 2;
 
-		return result;
-	}
-
-	public static SObject GetRoeForFish(SObject fish) {
-		Color color = TailoringMenu.GetDyeColor(fish) ?? Color.Orange;
-		if (fish.ParentSheetIndex == 698)
-			color = new Color(61, 55, 42);
-
-		ColoredObject result = new ColoredObject("812", 1, color);
-		result.name = fish.Name + " Roe";
-		result.preserve.Value = SObject.PreserveType.Roe;
-		result.preservedParentSheetIndex.Value = fish.QualifiedItemId;
-		result.Price += fish.sellToStorePrice() / 2;
-
-		return result;
-	}
-
-	/// <summary>
-	/// Returns locations a fish can be caught
-	/// </summary>
-	/// <returns> Dictionary<fishItemID, Dictionary<zone/Sublocation.Area, List<seasons>>></returns>
-	public static Dictionary<string, Dictionary<SubLocation, List<int>>> GetFishLocations() {
-		//Dictionary<SubLocation, seasons>
-		Dictionary<string, Dictionary<SubLocation, List<int>>> result = new();
-		//Dictionary<locationId, locationData>
-		var locations = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations");
-
-		foreach (var lp in locations) {
-			if (SkipLocation(lp.Key))
-				continue;
-
-			for (int season = 0; season < WorldDate.MonthsPerYear; season++) {
-				try {
-					//Dictionary<zone/Sublocation.Area, List<fishItemId>>
-					Dictionary<string, List<string>> data = GetLocationFish(lp.Key, season, locations);
-					if (data == null)
-						continue;
-
-					foreach (var pair in data) {
-						string zone = pair.Key;
-						//lp.Key = location name
-						SubLocation sl = new(lp.Key, zone);
-
-						foreach (string fish in pair.Value) {
-							//If result doesn't have this fish ID, add a new Dictionary<Sublocation, List<seasons>
-							if (!result.TryGetValue(fish, out var locs))
-								result[fish] = locs = new();
-							//If locs has this Sublocation, add the current season to it's List<seasons>
-							//Else add a new List<seasons> for this Sublocation with current season
-							if (locs.TryGetValue(sl, out var seasons))
-								seasons.Add(season);
-							else
-								locs[sl] = new List<int>() { season };
-						}
-					}
-				} catch {
-					ModEntry.LogWarn($"Error at FishHelper line 156");
-				}
-			}
-		}
-
-		return result;
-	}
-
-	public static Dictionary<string, List<SubLocation>> GetFishLocations(int season) {
-		Dictionary<string, List<SubLocation>> result = new();
-
-		var locations = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations");
-		foreach (var lp in locations) {
-			if (SkipLocation(lp.Key))
-				continue;
-
-			var data = GetLocationFish(season, lp.Value);
-			if (data == null)
-				continue;
-
-			foreach (var pair in data) {
-				string zone = pair.Key;
-				SubLocation sl = new(lp.Key, zone);
-
-				foreach(string fish in pair.Value) {
-					if (result.TryGetValue(fish, out var subs))
-						subs.Add(sl);
-					else
-						result.Add(fish, new List<SubLocation>() { sl });
-				}
-			}
-		}
-
-		return result;
-	}
-
-	public static Dictionary<string, List<string>> GetLocationFish(GameLocation location, int season) {
-		return GetLocationFish(location.Name, season);
-	}
-	
-	public static Dictionary<string, List<string>> GetLocationFishNoSeason(GameLocation location) {
-		return GetLocationFish(location.Name, null);
-	}
-
-	private static Dictionary<string, List<string>> GetLocationFish(string key, int? season, Dictionary<string, LocationData>? locations = null) {
-		if (key == "BeachNightMarket")
-			key = "Beach";
-
-		locations ??= Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations");
-		Dictionary<string, List<string>> result;
-		GameLocation loc;
-		if (locations.ContainsKey(key) && ContainsFish(locations[key]))
-			try {
-				result = GetLocationFish(season, locations[key]);
-			} catch {
-				result = new Dictionary<string, List<string>>();
-				ModEntry.LogWarn("Error at FishHelper line 196");
-			}
-		else
-			result = new Dictionary<string, List<string>>();
-
-		Farm farm;
-
-		try {
-			loc = Game1.getLocationFromName(key);
-			if (!loc.IsFarm)
-				return result;
-			farm = (Farm) loc;
-		} catch {
-			loc = Game1.getLocationFromName(key);
-			if (loc == null)
-				return result;
-			if (loc is not Farm location)
-				return result;
-			farm = location;
-			ModEntry.LogWarn($"Error at {location.DisplayName}, farm = loc section");
-		}
-		// Only reached if the location is a farm, determines the kind of farm below
-		switch (Game1.whichFarm) {
-			case 1:
-				result.Clear();
-				break;
-		}
-		ModEntry.LogTrace("Calling override...");
-		string ovr = farm.getMapProperty("FarmFishLocationOverride");
-		if (!string.IsNullOrEmpty(ovr)) {
-			string[] bits = ovr.Split(' ');
-			if (
-				bits.Length > 1 &&
-				!string.IsNullOrEmpty(bits[0]) &&
-				float.TryParse(bits[1], out float value) &&
-				value > 0 &&
-				locations.ContainsKey(bits[0])
-			) {
-				// If the value is 1 or higher, we will never not use the
-				// override, so clear the list.
-				if (value >= 1)
-					result.Clear();
-
-				try {
-					GetLocationFish(season, locations[bits[0]], result);
-				} catch {
-					ModEntry.LogWarn($"Error at {getLocName(locations[bits[0]])}, bits section.");
-				}
-
-			}
-		}
-		try{
-			GetLocationFish(season, locations[$"Farm_{Game1.GetFarmTypeKey()}"], result);
-		} catch {
-			ModEntry.LogWarn($"Error at {getLocName(locations[Game1.GetFarmTypeKey()])}, farm key section.");
-		}
-
-		return result;
-	}
-
-	private static void AddFish(string fishName, string fish, string zone, Dictionary<string, List<string>> existing) {
-		if (existing.TryGetValue(zone, out List<string>? result)) {
-			if (!result.Contains(fish)) {
-				result.Add(fish);
-				ModEntry.LogTrace($"Added fish data entry for {fishName} (ID:{fish}, Zone:{zone})");
-			}
-		} else
-			existing.Add(zone, new() { fish });
-	}
-
-	private static Dictionary<string, List<string>> GetLocationFish(int? season, LocationData data) {
-		return GetLocationFish(season, data, new Dictionary<string, List<string>>());
-	}
-
-	private static Dictionary<string, List<string>> GetLocationFish(int? season, LocationData data, Dictionary<string, List<string>> existing) {
-		if (data.Equals(null))
-			return existing;
-
-		var name = getLocName(data);
-		List<SpawnFishData> entries = data.Fish;
-		if (!data.Equals(Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations")["Default"])) {
-			var Default = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations")["Default"];
-			foreach (var f in Default.Fish)
-				if (!entries.Contains(f))
-					entries.Add(f);
-		}
-
-		entries.Sort((a,b)=> { return a.Precedence.CompareTo(b.Precedence); });
-
-		for (var i = 0; i < entries.Count; i++) {
-			var fish = string.IsNullOrEmpty(entries[i].ItemId) ? "(O)213" : entries[i].ItemId;
-			var fName = string.IsNullOrEmpty(ItemRegistry.Create(fish).DisplayName)? "Fish" : ItemRegistry.Create(fish).DisplayName;
-			var zone = string.IsNullOrEmpty(entries[i].FishAreaId) ? "No zone" : entries[i].FishAreaId;
-			if (fish.StartsWith("(O)") && canAddFish(entries[i], season, data))
-				AddFish(fName, fish, zone, existing);
-		}
-
-		ModEntry.LogTrace(season is not null
-			? $"Added fish data for {name}, season {season}"
-			: $"Added fish data for {name}, with no season");
-
-		return existing;
-	}
-
-	private static bool ContainsFish(LocationData loc) {
-		List<SpawnFishData> catchables = loc.Fish;
-		foreach (SpawnFishData f in catchables) if (f.ItemId.StartsWith("(O)")) return true;
-		return false;
-	}
-	private static string getLocName(LocationData data) {
-		string name = data.DisplayName == null ? "No DisplayName" : data.DisplayName;
-		string endCheck = name.Substring(name.Length - 7);
-		switch (endCheck) {
-			case "Name]]]":
-				name = "Farm";
-				break;
-			case ".11190]":
-				name = "Town";
-				break;
-			case ".11174]":
-				name = "Beach";
-				break;
-			case ".11176]":
-				name = "Mountain";
-				break;
-			case ".11186]":
-				name = "Forest";
-				break;
-			case ".11089]":
-				name = "Sewer";
-				break;
-			case ".11062]":
-				name = "Desert";
-				break;
-			case ".11114]":
-				name = "Woods";
-				break;
-		}
-		if (name.Length > 25) name = endCheck;
-		return name;
-	}
-	private static bool canAddFish(SpawnFishData fish, int? season, LocationData data) {
-		if (fish.Season == null && fish.Condition == null) return true;
-		if (fish.Season != null) {
-			ModEntry.LogTrace($"Season int: {season}, Season value {fish.Season}");
-			switch (season) {
-				case 0: if (fish.Season == StardewValley.Season.Spring) return true; break;
-				case 1: if (fish.Season == StardewValley.Season.Summer) return true; break;
-				case 2: if (fish.Season == StardewValley.Season.Fall) return true; break;
-				case 3: if (fish.Season == StardewValley.Season.Winter) return true; break;
-			}
-			return false;
-		}
-		string[] conditionBits = fish.Condition.Split(' ');
-		if (conditionBits[0] == "LOCATION_SEASON")
-			for(int i = 2; i<conditionBits.Length; i++)
-				switch (season) {
-					case 0: if (conditionBits[i].ToLower() == "spring") return true; break;
-					case 1: if (conditionBits[i].ToLower() == "summer") return true; break;
-					case 2: if (conditionBits[i].ToLower() == "fall") return true; break;
-					case 3: if (conditionBits[i].ToLower() == "winter") return true; break;
-				}
-		else if(GameStateQuery.CheckConditions(fish.Condition)) return true;
-		return false;
-	}
+        return result;
+    }
 }
+
+/// <summary>
+/// Unqualified fish IDs.
+/// </summary>
+public readonly struct FishId : IEquatable<FishId>
+{
+    public readonly string Value;
+
+    public FishId(string value)
+    {
+        Debug.Assert(!ItemRegistry.IsQualifiedItemId(value), "Fish ID has to be unqualified!");
+        Value = value;
+    }
+
+    public bool Equals(FishId other) => Value.Equals(other.Value, StringComparison.OrdinalIgnoreCase);
+    public override bool Equals([NotNullWhen(true)] object? obj) => obj is FishId other && Equals(other);
+    public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Value);
+
+    public override string ToString() => Value;
+}
+
+public record struct SpawningCondition(LocationArea Location, HashSet<Season> Seasons);
