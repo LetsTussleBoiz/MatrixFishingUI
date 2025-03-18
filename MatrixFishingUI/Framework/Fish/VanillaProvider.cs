@@ -11,7 +11,7 @@ public class VanillaProvider : IFishProvider {
 
 	public string Name => nameof(VanillaProvider);
 	public int Priority => 0;
-	private static readonly KeyValuePair<string, string>[] LegendaryPairs = [
+	private static readonly KeyValuePair<FishId, FishId>[] LegendaryPairs = [
 		// Son of Crimsonfish
 		new(new FishId("898"), new FishId("159")),
 		// Ms. Angler
