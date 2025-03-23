@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using StardewValley;
 using StardewValley.Internal;
@@ -19,7 +20,11 @@ public partial class PondItemData : INotifyPropertyChanged
                 .Select(item => new PondInfoModel(
                     ItemRegistry.GetData(item.ItemId), 
                     GetSalePrice(ItemRegistry.Create(item.ItemId), fish), 
-                    $"[Population Required: {item.RequiredPopulation}]")));
+                    $"[Population Required: {item.RequiredPopulation}]", 
+                    $"{item.MinStack}",
+                    $"{item.MaxStack}",
+                    item is { MinStack: > -1, MaxStack: > -1 },
+                    $"[{(item.Chance * 100).ToString(CultureInfo.InvariantCulture)}%]")));
         }
         
         return new PondItemData
@@ -67,4 +72,8 @@ public partial class PondItemData : INotifyPropertyChanged
 public record PondInfoModel(
     ParsedItemData Item,
     string SalesPrice,
-    string PopulationRequired);
+    string PopulationRequired,
+    string MinQuantity,
+    string MaxQuantity,
+    bool IsThereQuantity,
+    string Chance);

@@ -127,57 +127,31 @@ public class VanillaProvider : IFishProvider {
 					throw new ArgumentOutOfRangeException("weather", bits[7]);
 			}
 
+			seasons = new LuluSeason[1];
+			
 			caught = new(
 				Locations: locations,
 				Times: times,
 				Weather: weather,
 				Minlevel: minLevel
 			);
-
-			string[] seasonIds = bits[6].Split(' ');
-			if (seasonIds.Length >= 4)
-			{
-				seasons = new LuluSeason[1];
-				seasons[0] = LuluSeason.All;
-			}
-			else
-			{
-				seasons = new LuluSeason[seasonIds.Length];
-				for(int i = 0;i < seasonIds.Length;i++) {
-					string seasonId = seasonIds[i];
-					switch (seasonId) {
-						case "spring":
-							seasons[i] = LuluSeason.Spring;
-							break;
-						case "summer":
-							seasons[i] = LuluSeason.Summer;
-							break;
-						case "fall":
-							seasons[i] = LuluSeason.Fall;
-							break;
-						case "winter":
-							seasons[i] = LuluSeason.Winter;
-							break;
-					}
-				}
-			}
 		}
 
-		string desc = obj.getDescription();
+		var desc = obj.getDescription();
 		if (desc != null)
 			desc = WhitespaceRegex.Replace(desc, " ");
 
 
 		// Fish Ponds
 		FishPondData? pond = null;
-		if (pondData != null)
+		if (pondData is not null)
 			foreach (var entry in pondData) {
-				bool matched = true;
-				foreach (string tag in entry.RequiredTags) {
-					if (!obj.HasContextTag(tag)) {
-						matched = false;
-						break;
-					}
+				var matched = true;
+				foreach (var tag in entry.RequiredTags)
+				{
+					if (obj.HasContextTag(tag)) continue;
+					matched = false;
+					break;
 				}
 				if (!matched)
 					continue;
@@ -190,16 +164,16 @@ public class VanillaProvider : IFishProvider {
 		if (pond != null) {
 			// Taken from FishPond
 			if (pond.SpawnTime == -1) {
-				int price = obj.Price;
+				var price = obj.Price;
 				pond.SpawnTime = price > 30 ? (price > 80 ? (price > 120 ? (price > 250 ? 5 : 4) : 3) : 2) : 1;
 			}
-			int initial = 10;
-			if (pond.PopulationGates != null) {
-				foreach (int key in pond.PopulationGates.Keys)
-					if (key >= initial)
-						initial = key - 1;
+			var initial = 10;
+			if (pond.PopulationGates != null)
+			{
+				foreach (var key in pond.PopulationGates.Keys.Where(key => key >= initial))
+					initial = key - 1;
 			}
-			pondInfo = new(
+			pondInfo = new PondInfo(
 				Initial: initial,
 				SpawnTime: pond.SpawnTime,
 				ProducedItems: pond.ProducedItems
@@ -211,13 +185,36 @@ public class VanillaProvider : IFishProvider {
 			);
 		}
 
-		bool legend = false;
-		legend = obj.HasContextTag("fish_legendary");
+		string specialInfo;
+		
+		switch (id)
+		{
+			case "156": 
+				specialInfo = "Also located on Floor 20 & Floor 60 of the Mines with no level requirement, as well as drops from Ghosts.";
+				break;
+			case "158": 
+				specialInfo = "Also located on Floor 20 of the Mines with no level requirement.";
+				break;
+			case "161": 
+				specialInfo = "Also located on Floor 60 of the Mines with no level requirement.";
+				break;
+			default:
+				specialInfo = "No special information.";
+				break;
+		}
+		
+		if (FishHelper.SkipFish(Game1.player, new FishId(id)))
+		{
+			specialInfo = "Only catchable during Mr. Qi's Extended Family Special Order.";
+		}
+
+		var legend = obj.HasContextTag("fish_legendary");
 		return new FishInfo(
 			Id: id, // bits[0],
 			Item: obj,
 			Name: obj.DisplayName,
 			Description: desc,
+			SpecialInfo: specialInfo,
 			Sprite: ItemRegistry.GetData(obj.ItemId).GetTexture(),
 			Legendary: legend,
 			MinSize: minSize,

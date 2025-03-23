@@ -48,6 +48,7 @@ public record struct FishInfo(
 	string Name,
 	string? Description,
 	Texture2D? Sprite,
+	string SpecialInfo,
 
 	bool Legendary,
 

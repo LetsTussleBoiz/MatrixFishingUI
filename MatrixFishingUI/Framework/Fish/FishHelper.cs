@@ -83,7 +83,7 @@ public static class FishHelper
                 result[id] = spawningConditions;
             }
 
-            spawningConditions.Add(new SpawningCondition(new LocationArea(locationName, fish.FishAreaId), seasons));
+            spawningConditions.Add(new SpawningCondition(new LocationArea(locationName, fish.FishAreaId), seasons.ToList()));
         }
     }
 
@@ -185,4 +185,4 @@ public readonly struct FishId : IEquatable<FishId>
     public override string ToString() => Value;
 }
 
-public record struct SpawningCondition(LocationArea Location, HashSet<Season> Seasons);
+public record SpawningCondition(LocationArea Location, List<Season> Seasons);

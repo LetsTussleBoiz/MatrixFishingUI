@@ -49,16 +49,16 @@
       "SourceRect": "294, 453, 27, 11"
     },
     "Spring": {
-      "SourceRect": "188, 439, 32, 8"
+      "SourceRect": "406, 441, 12, 8"
     },
     "Summer": {
-      "SourceRect": "220, 439, 32, 8"
+      "SourceRect": "406, 449, 12, 8"
     },
     "Fall": {
-      "SourceRect": "188, 447, 32, 9"
+      "SourceRect": "406, 457, 12, 8"
     },
     "Winter": {
-      "SourceRect": "220 , 447, 32, 9"
+      "SourceRect": "406 , 465, 12, 8"
     }, 
     "Legendary": {
       "SourceRect": "634, 1840, 20, 20"
@@ -68,6 +68,42 @@
     },
     "FishBackground": {
       "SourceRect": "0, 2000, 32, 32"
+    },
+    "Zero": {
+      "SourceRect": "368, 56, 5, 8"
+    },
+    "One": {
+      "SourceRect": "373, 56, 5, 8"
+    },
+    "Two": {
+      "SourceRect": "378, 56, 5, 8"
+    },
+    "Three": {
+      "SourceRect": "383, 56, 5, 8"
+    },
+    "Four": {
+      "SourceRect": "388, 56, 5, 8"
+    },
+    "Five": {
+      "SourceRect": "393, 56, 5, 8"
+    },
+    "Six": {
+      "SourceRect": "398, 56, 5, 8"
+    },
+    "Seven": {
+      "SourceRect": "403, 56, 5, 8"
+    },
+    "Eight": {
+      "SourceRect": "408, 56, 5, 8"
+    },
+    "Nine": {
+      "SourceRect": "413, 56, 5, 8"
+    },
+    "Dash": {
+      "SourceRect": "413, 60, 3, 3"
+    },
+    "Level": {
+      "SourceRect": "421, 459, 12, 12"
     }
   }
 }

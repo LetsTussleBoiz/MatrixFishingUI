@@ -59,6 +59,7 @@ public class HudMenuData() : INotifyPropertyChanged
                 qualifications.Contains(IsFishCatchable.Season),
                 qualifications.Contains(IsFishCatchable.Time),
                 qualifications.Contains(IsFishCatchable.Weather),
+                qualifications.Contains(IsFishCatchable.Level),
                 fishInfo.GetCaughtStatus(Game1.player) is CaughtStatus.Caught,
                 fishInfo,
                 ItemRegistry.GetData(fishInfo.Id));
@@ -96,11 +97,39 @@ public class HudMenuData() : INotifyPropertyChanged
             "Sun" => FishWeather.Sunny,
             _ => FishWeather.Sunny
         };
+        var currentLevel = Game1.player.FishingLevel;
         var list = new List<IsFishCatchable>();
         // Can be null if it's a Trap Fish or smth non-fish
         if (fish.CatchInfo is null) return list;
         var requiredWeather = fish.CatchInfo.Value.Weather;
-        var requiredSeasons = fish.Seasons;
+        var locations = fish.CatchInfo.Value.Locations;
+        var requiredSeasons = new List<LuluSeason>();
+        if (locations is not null)
+        {
+            foreach (var spawningCondition in locations)
+            {
+                if (!spawningCondition.Location.TryGetGameLocation(out var location)) continue;
+                if (!location.GetLocationContextId().Equals(Game1.currentLocation.GetLocationContextId(),
+                        StringComparison.OrdinalIgnoreCase)) continue;
+                var seasons = spawningCondition.Seasons;
+                requiredSeasons.AddRange(seasons.Select(season => season switch
+                {
+                    Season.Spring => LuluSeason.Spring,
+                    Season.Summer => LuluSeason.Summer,
+                    Season.Fall => LuluSeason.Fall,
+                    Season.Winter => LuluSeason.Winter,
+                    _ => LuluSeason.All
+                }));
+            }
+        }
+        var requiredLevel = fish.CatchInfo.Value.Minlevel;
+        // Special Catch for Ice Pip, Stonefish, and Ghostfish
+        if (fish.Id.Equals("161", StringComparison.OrdinalIgnoreCase) 
+            || fish.Id.Equals("158", StringComparison.OrdinalIgnoreCase)
+            || fish.Id.Equals("156", StringComparison.OrdinalIgnoreCase))
+        {
+            requiredLevel = 0;
+        }
         var startTime = fish.CatchInfo.Value.Times[0].Start;
         var endTime = fish.CatchInfo.Value.Times[0].End;
         
@@ -108,11 +137,16 @@ public class HudMenuData() : INotifyPropertyChanged
         {
             list.Add(IsFishCatchable.Time);
         }
+
+        if (requiredLevel > currentLevel)
+        {
+            list.Add(IsFishCatchable.Level);
+        }
         if (requiredWeather is not FishWeather.Any && !updatedWeather.Equals(requiredWeather))
         {
             list.Add(IsFishCatchable.Weather);
         }
-        if (!(requiredSeasons ?? []).Contains(currentSeason) && !(requiredSeasons ?? []).Contains(LuluSeason.All))
+        if (!requiredSeasons.Contains(currentSeason) && !requiredSeasons.Contains(LuluSeason.All))
         {
             list.Add(IsFishCatchable.Season);
         }
@@ -148,5 +182,6 @@ public enum IsFishCatchable
     Yes = -1,
     Time = 0,
     Season = 1,
-    Weather = 2
+    Weather = 2,
+    Level = 3
 }

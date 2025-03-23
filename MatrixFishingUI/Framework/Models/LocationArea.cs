@@ -3,7 +3,7 @@ using StardewValley;
 
 namespace MatrixFishingUI.Framework.Models;
 
-public readonly record struct LocationArea(string LocationName, string AreaName)
+public record LocationArea(string LocationName, string AreaName)
 {
 
 	public bool TryGetGameLocation([NotNullWhen(true)] out GameLocation? gameLocation)

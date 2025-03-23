@@ -29,19 +29,16 @@ public class FishMenuData : INotifyPropertyChanged
     // ReSharper disable once UnusedMember.Global
     public void Display(ParsedItemData fish)
     {
+        if (string.IsNullOrEmpty(fish.ItemId))
+        {
+            ModEntry.LogError($"The following fish has no ItemId: {fish.DisplayName}");
+            return;
+        }
         var fishInfo = ModEntry.Fish.GetFish(new FishId(fish.ItemId));
         var index = Fish.IndexOf(fish);
         var nextFish = ModEntry.Fish.GetFish(index == Fish.Count-1 ? new FishId(Fish[0].ItemId) : new FishId(Fish[index+1].ItemId));
         var prevFish = ModEntry.Fish.GetFish(index == 0 ? new FishId(Fish[^1].ItemId) : new FishId(Fish[index-1].ItemId));
         ModEntry.Log(fishInfo.ToString() ?? string.Empty);
-        if (fishInfo.CatchInfo?.Locations != null)
-        {
-            ModEntry.Log($"Location Amount: {fishInfo.CatchInfo.Value.Locations.Count}");
-            foreach (var location in fishInfo.CatchInfo.Value.Locations)
-            {
-                ModEntry.Log($"Location: {location.Location.LocationName}");
-            }
-        }
         var context = FishInfoData.GetSingleFish(fishInfo, prevFish, nextFish, index);
         ViewEngine.OpenChildMenu("Mods/Borealis.MatrixFishingUI/Views/TestView", context);
     }

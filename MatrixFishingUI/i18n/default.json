@@ -8,6 +8,11 @@
   "ui.fishipedia.weather.any": "Any Weather",
   "ui.fishipedia.weather.none": "No Weather",
 
+  "ui.fishipedia.season.spring": "Spring",
+  "ui.fishipedia.season.summer": "Summer",
+  "ui.fishipedia.season.fall": "Fall",
+  "ui.fishipedia.season.winter": "Winter",
+
   "ui.fishipedia.time.time_available": "Time Available: ",
   "ui.fishipedia.time.between": "Between ",
   "ui.fishipedia.time.and": "and ",

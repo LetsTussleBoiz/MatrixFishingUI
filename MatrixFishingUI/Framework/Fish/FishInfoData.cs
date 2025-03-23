@@ -23,6 +23,8 @@ public partial class FishInfoData : INotifyPropertyChanged
     public WaterType WaterType { get; set; }
     // Caught Fish
     public List<string>? Locations { get; set; }
+    public List<SpawningCondition>? LocationSeasonPairs { get; set; }
+    public string SpecialInfo { get; set; } = "";
     public string StartTime { get; set; } = "";
     public string EndTime { get; set; } = "";
     public FishWeather? FishWeather { get; set; }
@@ -68,12 +70,14 @@ public partial class FishInfoData : INotifyPropertyChanged
             FishType = fish.FishType,
             WaterType = fish.TrapInfo?.Location ?? WaterType.None,
             Locations = GetLocations(locations),
+            LocationSeasonPairs = fish.CatchInfo?.Locations ?? [],
             StartTime = FormatTime(fish.CatchInfo?.Times[0].Start),
             EndTime = FormatTime(fish.CatchInfo?.Times[0].End),
             FishWeather = fish.CatchInfo?.Weather,
             MinLevel = fish.CatchInfo?.Minlevel,
             Initial = fish.PondInfo?.Initial,
             SpawnTime = fish.PondInfo?.SpawnTime,
+            SpecialInfo = fish.SpecialInfo,
             SpawnTimeString = $"Spawn Time: {fish.PondInfo?.SpawnTime} days",
             PondItems = PondItemData.GetPondItems(fish.PondInfo, fish.Item),
             CaughtStatus = fish.GetCaughtStatus(Game1.player),
@@ -134,7 +138,9 @@ public partial class FishInfoData : INotifyPropertyChanged
     {
         var toReturn = new List<string>();
         if (list is null) return toReturn;
-        toReturn.AddRange(list.Select(locationArea => locationArea.LocationName));
+        toReturn.AddRange(list.Select(locationArea => locationArea.TryGetGameLocation(out var location)
+            ? location.DisplayName
+            : locationArea.LocationName));
         return toReturn;
     }
 
