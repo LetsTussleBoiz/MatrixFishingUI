@@ -77,18 +77,18 @@ public class VanillaProvider : IFishProvider {
 		if (bits[1].Equals("trap")) {
 			// Trap Fish
 			fishType = FishType.Trap;
-			WaterType type;
-			if (bits[4] == "freshwater")
-				type = WaterType.Freshwater;
-			else if (bits[4] == "ocean")
-				type = WaterType.Ocean;
+			string waterType;
+			if (bits[4].Equals("freshwater", StringComparison.OrdinalIgnoreCase))
+				waterType = "Freshwater";
+			else if (bits[4].Equals("ocean", StringComparison.OrdinalIgnoreCase))
+				waterType = "Ocean";
 			else
-				throw new ArgumentOutOfRangeException("location", bits[4], "location must be freshwater or ocean");
+				waterType = bits[4];
 
 			minSize = Convert.ToInt32(bits[5]);
 			maxSize = Convert.ToInt32(bits[6]);
 
-			trap = new(type);
+			trap = new(waterType);
 
 			seasons = new LuluSeason[1];
 			seasons[0] = LuluSeason.All;

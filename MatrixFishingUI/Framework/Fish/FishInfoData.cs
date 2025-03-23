@@ -11,8 +11,8 @@ namespace MatrixFishingUI.Framework.Fish;
 public partial class FishInfoData : INotifyPropertyChanged
 {
     public FishInfo Fish { get; set; }
-    public string Name { get; set; } = "";
-    public string? Description { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; } = string.Empty;
     public ParsedItemData? ParsedFish { get; set; }
     public bool Legendary { get; set; }
     public int MinSize { get; set; }
@@ -20,19 +20,19 @@ public partial class FishInfoData : INotifyPropertyChanged
     public LuluSeason[]? Seasons { get; set; }
     public FishType FishType { get; set; }
     // Trap Fish
-    public WaterType WaterType { get; set; }
+    public string WaterType { get; set; } = string.Empty;
     // Caught Fish
     public List<string>? Locations { get; set; }
     public List<SpawningCondition>? LocationSeasonPairs { get; set; }
-    public string SpecialInfo { get; set; } = "";
-    public string StartTime { get; set; } = "";
-    public string EndTime { get; set; } = "";
+    public string SpecialInfo { get; set; } = string.Empty;
+    public string StartTime { get; set; } = string.Empty;
+    public string EndTime { get; set; } = string.Empty;
     public FishWeather? FishWeather { get; set; }
     public int? MinLevel { get; set; } = 0;
     // Pond Info
     public int? Initial { get; set; } = 0;
     public int? SpawnTime { get; set; } = 0;
-    public string? SpawnTimeString { get; set; } = "";
+    public string? SpawnTimeString { get; set; } = string.Empty;
     public PondItemData? PondItems { get; set; }
     // Method Calls
     public CaughtStatus CaughtStatus { get; set; }
@@ -68,7 +68,7 @@ public partial class FishInfoData : INotifyPropertyChanged
             MaxSize = fish.MaxSize,
             Seasons = fish.Seasons,
             FishType = fish.FishType,
-            WaterType = fish.TrapInfo?.Location ?? WaterType.None,
+            WaterType = fish.TrapInfo?.WaterType ?? string.Empty,
             Locations = GetLocations(locations),
             LocationSeasonPairs = fish.CatchInfo?.Locations ?? [],
             StartTime = FormatTime(fish.CatchInfo?.Times[0].Start),

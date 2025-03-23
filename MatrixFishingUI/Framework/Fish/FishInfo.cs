@@ -15,13 +15,6 @@ public record struct TimeOfDay(
 
 };
 
-[Flags]
-public enum WaterType {
-	None,
-	Freshwater,
-	Ocean
-};
-
 public enum FishWeather {	
 	None,
 	Rain,
@@ -88,7 +81,7 @@ public record struct FishInfo(
 }
 
 public record struct TrapFishInfo(
-	WaterType Location
+	string WaterType
 );
 
 public record struct CatchFishInfo(
