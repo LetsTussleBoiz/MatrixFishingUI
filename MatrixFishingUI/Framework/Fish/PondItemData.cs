@@ -16,7 +16,7 @@ public partial class PondItemData : INotifyPropertyChanged
         var list = new List<PondInfoModel>();
         if (pond is not null)
         {
-            list.AddRange(pond.Value.FishPondRewards
+            list.AddRange(pond.FishPondRewards
                 .Select(item => new PondInfoModel(
                     ItemRegistry.GetData(item.ItemId), 
                     GetSalePrice(ItemRegistry.Create(item.ItemId), fish), 

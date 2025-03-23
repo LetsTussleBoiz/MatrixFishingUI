@@ -10,7 +10,7 @@ namespace MatrixFishingUI.Framework.Fish;
 
 public partial class FishInfoData : INotifyPropertyChanged
 {
-    public FishInfo Fish { get; set; }
+    public FishInfo? Fish { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; } = string.Empty;
     public ParsedItemData? ParsedFish { get; set; }
@@ -39,9 +39,9 @@ public partial class FishInfoData : INotifyPropertyChanged
     public int NumberCaught { get; set; }
     public int BiggestCatch { get; set; }
     // TODO: Optimize FishInfo indexing
-    [Notify] private FishInfo previous;
-    [Notify] private FishInfo current;
-    [Notify] private FishInfo next;
+    [Notify] private FishInfo? previous;
+    [Notify] private FishInfo? current;
+    [Notify] private FishInfo? next;
     [Notify] private int index;
     [Notify] private FishInfoTab selectedTab;
     public IReadOnlyList<FishInfoTabViewModel> AllTabs { get; } =
@@ -55,7 +55,7 @@ public partial class FishInfoData : INotifyPropertyChanged
         var locations = new List<LocationArea>();
         if (fish.CatchInfo is not null)
         {
-            locations.AddRange(from spawningCondition in fish.CatchInfo.Value.Locations ?? [] select spawningCondition.Location);
+            locations.AddRange(from spawningCondition in fish.CatchInfo.Locations ?? [] select spawningCondition.Location);
         }
         return new FishInfoData
         {
@@ -93,9 +93,10 @@ public partial class FishInfoData : INotifyPropertyChanged
     // ReSharper disable once UnusedMember.Global
     public void PreviousFish()
     {
+        if (Previous is null || Current is null) return;
         var fishCatalogue = FishMenuData.GetFish().Fish;
         var localIndex = Index == 0 ? fishCatalogue.Count - 1 : Index - 1;
-        var prevFish = ModEntry.Fish.GetFish(localIndex == 0 ? new FishId(fishCatalogue[^1].ItemId) : new FishId(FishMenuData.GetFish().Fish[localIndex-1].ItemId));
+        var prevFish = ModEntry.Fish.GetFish(localIndex == 0 ? new FishId(fishCatalogue[^1].Id) : new FishId(FishMenuData.GetFish().Fish[localIndex-1].Id));
         var context = GetSingleFish(Previous, prevFish, Current, localIndex);
         ViewEngine.ChangeChildMenu("Mods/Borealis.MatrixFishingUI/Views/TestView", context);
     }
@@ -103,9 +104,10 @@ public partial class FishInfoData : INotifyPropertyChanged
     // ReSharper disable once UnusedMember.Global
     public void NextFish()
     {
+        if (Next is null || Current is null) return;
         var fishCatalogue = FishMenuData.GetFish().Fish;
         var localIndex = Index == fishCatalogue.Count - 1 ? 0 : Index + 1;
-        var nextFish = ModEntry.Fish.GetFish(localIndex == fishCatalogue.Count - 1 ? new FishId(fishCatalogue[0].ItemId) : new FishId(FishMenuData.GetFish().Fish[localIndex+1].ItemId));
+        var nextFish = ModEntry.Fish.GetFish(localIndex == fishCatalogue.Count - 1 ? new FishId(fishCatalogue[0].Id) : new FishId(FishMenuData.GetFish().Fish[localIndex+1].Id));
         var context = GetSingleFish(Next, Current, nextFish, localIndex);
         ViewEngine.ChangeChildMenu("Mods/Borealis.MatrixFishingUI/Views/TestView", context);
     }

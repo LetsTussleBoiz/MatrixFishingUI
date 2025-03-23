@@ -47,7 +47,7 @@ public class VanillaProvider : IFishProvider {
 					}
 				}
 				var info = GetFishInfo(fishId.Value, entry.Value, fishLocations ?? [], pondData);
-				if (info.HasValue) result.Add(info.Value);
+				if (info is not null) result.Add(info);
 			} catch(Exception) {
 				ModEntry.LogWarn($"Unable to process fish: {entry.Key}");
 			}
@@ -212,6 +212,7 @@ public class VanillaProvider : IFishProvider {
 		return new FishInfo(
 			Id: id, // bits[0],
 			Item: obj,
+			FishData: ItemRegistry.GetData(id),
 			Name: obj.DisplayName,
 			Description: desc,
 			SpecialInfo: specialInfo,

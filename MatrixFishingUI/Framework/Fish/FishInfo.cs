@@ -3,10 +3,11 @@ using MatrixFishingUI.Framework.Models;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.GameData.FishPonds;
+using StardewValley.ItemTypeDefinitions;
 
 namespace MatrixFishingUI.Framework.Fish;
 
-public record struct TimeOfDay(
+public record TimeOfDay(
 	int Start,
 	int End
 ) {
@@ -15,29 +16,30 @@ public record struct TimeOfDay(
 
 };
 
-public enum FishWeather {	
+public enum FishWeather {
 	None,
 	Rain,
 	Sunny,
 	Any
-};
+}
 
 public enum FishType {
 	Trap,
 	Catch
-};
+}
 
 public enum CaughtStatus {
 	Uncaught,
 	Caught
 }
 
-public record struct FishInfo(
+public record FishInfo(
 	// Deduplication
 	string Id,
 
 	// Main Display
 	Item Item,
+	ParsedItemData FishData, 
 	string Name,
 	string? Description,
 	Texture2D? Sprite,
@@ -80,18 +82,18 @@ public record struct FishInfo(
 	}
 }
 
-public record struct TrapFishInfo(
+public record TrapFishInfo(
 	string WaterType
 );
 
-public record struct CatchFishInfo(
+public record CatchFishInfo(
 	List<SpawningCondition>? Locations,
 	TimeOfDay[] Times,
 	FishWeather Weather,
 	int Minlevel
 );
 
-public record struct PondInfo(
+public record PondInfo(
 	int Initial,
 	int SpawnTime,
 	List<Item> ProducedItems,

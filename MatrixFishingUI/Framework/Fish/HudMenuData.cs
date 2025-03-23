@@ -52,7 +52,7 @@ public class HudMenuData() : INotifyPropertyChanged
         foreach (var fish in fishList)
         {
             FishInfos.TryGetValue(fish, out var fishInfo);
-            if (fishInfo.Id is null) continue;
+            if (fishInfo is null) continue;
             var qualifications = QualifyFish(fishInfo, currentWeather, currentSeasonNumber, currentTime);
             var localFish = new LocalFish(
                 qualifications.Contains(IsFishCatchable.Yes),
@@ -101,8 +101,8 @@ public class HudMenuData() : INotifyPropertyChanged
         var list = new List<IsFishCatchable>();
         // Can be null if it's a Trap Fish or smth non-fish
         if (fish.CatchInfo is null) return list;
-        var requiredWeather = fish.CatchInfo.Value.Weather;
-        var locations = fish.CatchInfo.Value.Locations;
+        var requiredWeather = fish.CatchInfo.Weather;
+        var locations = fish.CatchInfo.Locations;
         var requiredSeasons = new List<LuluSeason>();
         if (locations is not null)
         {
@@ -122,7 +122,7 @@ public class HudMenuData() : INotifyPropertyChanged
                 }));
             }
         }
-        var requiredLevel = fish.CatchInfo.Value.Minlevel;
+        var requiredLevel = fish.CatchInfo.Minlevel;
         // Special Catch for Ice Pip, Stonefish, and Ghostfish
         if (fish.Id.Equals("161", StringComparison.OrdinalIgnoreCase) 
             || fish.Id.Equals("158", StringComparison.OrdinalIgnoreCase)
@@ -130,8 +130,8 @@ public class HudMenuData() : INotifyPropertyChanged
         {
             requiredLevel = 0;
         }
-        var startTime = fish.CatchInfo.Value.Times[0].Start;
-        var endTime = fish.CatchInfo.Value.Times[0].End;
+        var startTime = fish.CatchInfo.Times[0].Start;
+        var endTime = fish.CatchInfo.Times[0].End;
         
         if (currentTime < startTime || currentTime >= endTime)
         {
