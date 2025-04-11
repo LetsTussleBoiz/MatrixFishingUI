@@ -15,7 +15,7 @@ namespace MatrixFishingUI
         private static IMonitor? _monitor;
         public static IViewEngine? ViewEngine;
         internal static FishManager Fish = null!;
-        private bool _holdingRod;
+        private bool _canShowHud;
         private IViewDrawable? _hudWidget;
         
         public override void Entry(IModHelper helper)
@@ -275,7 +275,7 @@ namespace MatrixFishingUI
         private void UpdateHud()
         {
             Fish.RefreshFish();
-            if (!_holdingRod) return;
+            if (!_canShowHud) return;
             ToggleHud();
             ToggleHud();
         }
@@ -332,14 +332,14 @@ namespace MatrixFishingUI
         private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
             if (!Context.IsWorldReady) return;
-            var isHoldingRod = Game1.player.CurrentTool is FishingRod;
-            if (isHoldingRod && !_holdingRod)
+            var canShowHud = Game1.player.CurrentTool is FishingRod && Context.IsPlayerFree;
+            if (canShowHud && !_canShowHud)
             {
-                _holdingRod = true;
+                _canShowHud = true;
                 ToggleHud();
-            } else if (!isHoldingRod && _holdingRod)
+            } else if (!canShowHud && _canShowHud)
             {
-                _holdingRod = false;
+                _canShowHud = false;
                 ToggleHud();
             }
         }
