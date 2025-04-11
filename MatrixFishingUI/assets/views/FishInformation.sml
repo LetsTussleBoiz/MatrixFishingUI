@@ -6,7 +6,7 @@
             sprite={@Mods/StardewUI/Sprites/SmallLeftArrow}
             focusable="true"
             click=|PreviousFish()| />
-        <banner layout="380px content"
+        <banner layout="450px content"
             margin="16, 0"
             background={@Mods/StardewUI/Sprites/BannerBackground}
             background-border-thickness="48, 0"
@@ -157,7 +157,7 @@
                                 <lane *repeat={LocationSeasonPairs} orientation="vertical" horizontal-content-alignment="start">
                                     <lane orientation="horizontal">
                                         <lane *context={Location}>
-                                            <label bold="true" margin="0, 8" color="#136" text={LocationName} />
+                                            <label bold="true" margin="0, 8" color="#136" text={LocationReadableName} />
                                         </lane>
                                         <spacer layout="4px 0px" />
                                             <label margin="0, 8" color="#136" text="during" />

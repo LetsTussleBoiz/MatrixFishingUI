@@ -20,7 +20,7 @@ public partial class PondItemData : INotifyPropertyChanged
                 .Select(item => new PondInfoModel(
                     ItemRegistry.GetData(item.ItemId), 
                     GetSalePrice(ItemRegistry.Create(item.ItemId), fish), 
-                    $"[Population Required: {item.RequiredPopulation}]", 
+                    $"[{I18n.Ui_Fishipedia_Ponds_PopRequired()} {item.RequiredPopulation}]", 
                     $"{item.MinStack}",
                     $"{item.MaxStack}",
                     item is { MinStack: > -1, MaxStack: > -1 },
@@ -35,7 +35,7 @@ public partial class PondItemData : INotifyPropertyChanged
 
     private static string GetSalePrice(Item item, Item fish)
     {
-        if(item.QualifiedItemId is not "(O)812") return $"[Sale Price: {item.salePrice()}g] ";
+        if(item.QualifiedItemId is not "(O)812") return $"[{I18n.Ui_Fishipedia_Ponds_SalePrice()} {item.salePrice()}g] ";
         ItemQueryContext itemQueryContext = new();
 
         var result = ItemQueryResolver.DefaultResolvers.FLAVORED_ITEM(
@@ -47,7 +47,7 @@ public partial class PondItemData : INotifyPropertyChanged
             logError: (_, _) => { })
             .FirstOrDefault();
 
-        return result is null ? string.Empty : $"[Sale Price: {result.Item.salePrice()}g] ";
+        return result is null ? string.Empty : $"[{I18n.Ui_Fishipedia_Ponds_SalePrice()} {result.Item.salePrice()}g] ";
     }
 
     #region PropertyChanges

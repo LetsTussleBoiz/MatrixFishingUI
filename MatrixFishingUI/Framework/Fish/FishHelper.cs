@@ -83,7 +83,12 @@ public static class FishHelper
                 result[id] = spawningConditions;
             }
 
-            spawningConditions.Add(new SpawningCondition(new LocationArea(locationName, fish.FishAreaId), seasons.ToList()));
+            var locationArea = new LocationArea(locationName, fish.FishAreaId, locationName);
+            if (locationArea.TryGetGameLocation(out var location))
+            {
+                locationArea = locationArea with { LocationReadableName = location.DisplayName };
+            }
+            spawningConditions.Add(new SpawningCondition(locationArea, seasons.ToList()));
         }
     }
 

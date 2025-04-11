@@ -1,5 +1,4 @@
 using MatrixFishingUI.Framework.Enums;
-using MatrixFishingUI.Framework.Models;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.GameData.FishPonds;

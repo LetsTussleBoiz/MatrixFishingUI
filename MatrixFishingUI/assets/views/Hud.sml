@@ -20,15 +20,11 @@
                                 <image *if={HasBeenCaught}
                                     layout="64px"
                                     margin="0, 0, 0, 4"
-                                    focusable="true"
-                                    tooltip={:Name}
                                     sprite={:ParsedFish} />
                                 <image *!if={HasBeenCaught}
                                     layout="64px"
                                     margin="0, 0, 0, 4"
                                     tint="#0006"
-                                    focusable="true"
-                                    tooltip={:Name}
                                     sprite={:ParsedFish} />
                             </lane>
                         </lane>
@@ -48,15 +44,11 @@
                                 <image *if={HasBeenCaught}
                                     layout="64px"
                                     margin="0, 0, 0, 4"
-                                    focusable="true"
-                                    tooltip={:Name}
                                     sprite={:ParsedFish} />
                                 <image *!if={HasBeenCaught}
                                     layout="64px"
                                     margin="0, 0, 0, 4"
-                                    focusable="true"
                                     tint="#0006"
-                                    tooltip={:Name}
                                     sprite={:ParsedFish} />
                                 <panel layout="stretch stretch" horizontal-content-alignment="end" vertical-content-alignment="start">
                                     <lane orientation="vertical" horizontal-content-alignment="end" vertical-content-alignment="start">

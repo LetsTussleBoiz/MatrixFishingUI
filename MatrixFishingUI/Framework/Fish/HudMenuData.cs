@@ -9,7 +9,8 @@ public class HudMenuData() : INotifyPropertyChanged
 {
     // ReSharper disable once MemberCanBePrivate.Global
     public Dictionary<FishId,FishInfo> FishInfos { get; set; } = [];
-    public string Title { get; set; } = "Fish Helper";
+    // ReSharper disable once UnusedMember.Global
+    public string Title { get; set; } = I18n.Ui_Hud_Title();
     // ReSharper disable once MemberCanBePrivate.Global
     public Dictionary<string, LocalFish> FilteredCatchables { get; set; } = [];
     // ReSharper disable once MemberCanBePrivate.Global

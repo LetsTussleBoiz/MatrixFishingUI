@@ -78,7 +78,7 @@ public partial class FishInfoData : INotifyPropertyChanged
             Initial = fish.PondInfo?.Initial,
             SpawnTime = fish.PondInfo?.SpawnTime,
             SpecialInfo = fish.SpecialInfo,
-            SpawnTimeString = $"Spawn Time: {fish.PondInfo?.SpawnTime} days",
+            SpawnTimeString = $"{I18n.Ui_Fishipedia_Spawntime_One()}{fish.PondInfo?.SpawnTime} {I18n.Ui_Fishipedia_Spawntime_Two()}",
             PondItems = PondItemData.GetPondItems(fish.PondInfo, fish.Item),
             CaughtStatus = fish.GetCaughtStatus(Game1.player),
             NumberCaught = fish.GetNumberCaught(Game1.player),
@@ -98,7 +98,7 @@ public partial class FishInfoData : INotifyPropertyChanged
         var localIndex = Index == 0 ? fishCatalogue.Count - 1 : Index - 1;
         var prevFish = ModEntry.Fish.GetFish(localIndex == 0 ? new FishId(fishCatalogue[^1].Id) : new FishId(FishMenuData.GetFish().Fish[localIndex-1].Id));
         var context = GetSingleFish(Previous, prevFish, Current, localIndex);
-        ViewEngine.ChangeChildMenu("Mods/Borealis.MatrixFishingUI/Views/TestView", context);
+        ViewEngine.ChangeChildMenu("Mods/Borealis.MatrixFishingUI/Views/FishInformation", context);
     }
 
     // ReSharper disable once UnusedMember.Global
@@ -109,7 +109,7 @@ public partial class FishInfoData : INotifyPropertyChanged
         var localIndex = Index == fishCatalogue.Count - 1 ? 0 : Index + 1;
         var nextFish = ModEntry.Fish.GetFish(localIndex == fishCatalogue.Count - 1 ? new FishId(fishCatalogue[0].Id) : new FishId(FishMenuData.GetFish().Fish[localIndex+1].Id));
         var context = GetSingleFish(Next, Current, nextFish, localIndex);
-        ViewEngine.ChangeChildMenu("Mods/Borealis.MatrixFishingUI/Views/TestView", context);
+        ViewEngine.ChangeChildMenu("Mods/Borealis.MatrixFishingUI/Views/FishInformation", context);
     }
     
     // ReSharper disable once UnusedMember.Global

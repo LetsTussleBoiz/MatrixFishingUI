@@ -23,7 +23,7 @@ namespace MatrixFishingUI
             _config = helper.ReadConfig<ModConfig>();
             _monitor = Monitor;
             Monitor.Log($"Started with menu key {_config.OpenMenuKey}.");
-            Fish = new FishManager(this);
+            Fish = new FishManager();
             I18n.Init(helper.Translation);
             
             // hook events

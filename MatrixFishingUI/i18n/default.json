@@ -1,7 +1,12 @@
 {
   "mod-name": "ArgonMatrix Fishing UI",
   "controls.pressnewkey": "On Button Pressed",
-  "ui.title": "Lulu's Fishing UI",
+  "ui.fishipedia.title": "Fishipedia",
+  
+  "ui.hud.title": "Fish Helper",
+  
+  "watertype.freshwater": "Freshwater",
+  "watertype.ocean": "Ocean",
   
   "ui.fishipedia.weather.rainy": "Rainy",
   "ui.fishipedia.weather.sunny": "Sunny",
@@ -25,7 +30,13 @@
   "ui.fishipedia.titles.items_produced": "Items Produced",
 
   "ui.fishipedia.tooltips.legendary": "Legendary Fish",
+  
+  "ui.fishipedia.ponds.pop_required": "Population Required:",
+  "ui.fishipedia.ponds.sale_price": "Sale Price:",
 
+  "ui.fishipedia.spawntime.one": "Spawn Time: ",
+  "ui.fishipedia.spawntime.two": "days",
+  
   "ui.fishipedia.labels.description": "Description: ",
   "ui.fishipedia.labels.caught_status": "Fish Catch Status: ",
   "ui.fishipedia.labels.min_size": "Minimum Size: ",
@@ -39,5 +50,11 @@
   "ui.fishipedia.labels.weather_required": "Weather Required: ",
   "ui.fishipedia.labels.seasons": "Season(s) Available: ",
   
-  "ui.hud.labels.no_fish": "No catchable fish in current location!"
+  "ui.hud.labels.no_fish": "No catchable fish in current location!",
+  
+  "specialinfo.ghostfish": "Also located on Floor 20 & Floor 60 of the Mines with no level requirement, as well as drops from Ghosts.",
+  "specialinfo.stonefish": "Also located on Floor 20 of the Mines with no level requirement.",
+  "specialinfo.icepip": "Also located on Floor 60 of the Mines with no level requirement.",
+  "specialinfo.none": "No special information.",
+  "specialinfo.extended_family": "Only catchable during Mr. Qi's Extended Family Special Order."
 }

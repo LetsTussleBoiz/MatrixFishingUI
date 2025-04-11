@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using StardewValley;
-using StardewValley.ItemTypeDefinitions;
 
 namespace MatrixFishingUI.Framework.Fish;
 
@@ -26,7 +24,7 @@ public class FishMenuData : INotifyPropertyChanged
         // };
         return new FishMenuData
         {
-            HeaderText = "Fishipedia",
+            HeaderText = I18n.Ui_Fishipedia_Title(),
             Fish = ModEntry.Fish.GetAllFish().Values.ToList()
         };
     }
@@ -44,7 +42,7 @@ public class FishMenuData : INotifyPropertyChanged
         var prevFish = ModEntry.Fish.GetFish(index == 0 ? new FishId(Fish[^1].Id) : new FishId(Fish[index-1].Id));
         ModEntry.Log(fish.ToString() ?? string.Empty);
         var context = FishInfoData.GetSingleFish(fish, prevFish, nextFish, index);
-        ViewEngine.OpenChildMenu("Mods/Borealis.MatrixFishingUI/Views/TestView", context);
+        ViewEngine.OpenChildMenu("Mods/Borealis.MatrixFishingUI/Views/FishInformation", context);
     }
 
     #region Property Changes

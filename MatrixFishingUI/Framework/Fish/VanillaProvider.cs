@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
 using MatrixFishingUI.Framework.Enums;
-using MatrixFishingUI.Framework.Models;
 using StardewValley;
 using StardewValley.GameData.FishPonds;
 
@@ -79,9 +78,9 @@ public class VanillaProvider : IFishProvider {
 			fishType = FishType.Trap;
 			string waterType;
 			if (bits[4].Equals("freshwater", StringComparison.OrdinalIgnoreCase))
-				waterType = "Freshwater";
+				waterType = I18n.Watertype_Freshwater();
 			else if (bits[4].Equals("ocean", StringComparison.OrdinalIgnoreCase))
-				waterType = "Ocean";
+				waterType = I18n.Watertype_Ocean();
 			else
 				waterType = bits[4];
 
@@ -190,22 +189,22 @@ public class VanillaProvider : IFishProvider {
 		switch (id)
 		{
 			case "156": 
-				specialInfo = "Also located on Floor 20 & Floor 60 of the Mines with no level requirement, as well as drops from Ghosts.";
+				specialInfo = I18n.Specialinfo_Ghostfish();
 				break;
 			case "158": 
-				specialInfo = "Also located on Floor 20 of the Mines with no level requirement.";
+				specialInfo = I18n.Specialinfo_Stonefish();
 				break;
 			case "161": 
-				specialInfo = "Also located on Floor 60 of the Mines with no level requirement.";
+				specialInfo = I18n.Specialinfo_Icepip();
 				break;
 			default:
-				specialInfo = "No special information.";
+				specialInfo = I18n.Specialinfo_None();
 				break;
 		}
 		
 		if (FishHelper.SkipFish(Game1.player, new FishId(id)))
 		{
-			specialInfo = "Only catchable during Mr. Qi's Extended Family Special Order.";
+			specialInfo = I18n.Specialinfo_ExtendedFamily();
 		}
 
 		var legend = obj.HasContextTag("fish_legendary");

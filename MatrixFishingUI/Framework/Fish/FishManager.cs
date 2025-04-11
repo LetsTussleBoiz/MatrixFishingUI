@@ -1,6 +1,4 @@
-﻿using MatrixFishingUI.Framework.Models;
-
-namespace MatrixFishingUI.Framework.Fish;
+﻿namespace MatrixFishingUI.Framework.Fish;
 
 public class FishManager
 {
@@ -8,7 +6,7 @@ public class FishManager
     private Dictionary<FishId,FishInfo> _fish = new();
     private bool _loaded;
     
-    public FishManager(ModEntry mod)
+    public FishManager()
     {
         _providers.Add(new VanillaProvider());
     }
