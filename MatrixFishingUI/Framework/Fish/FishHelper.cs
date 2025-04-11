@@ -16,12 +16,13 @@ public static class FishHelper
     {
         var result = new Dictionary<FishId, List<SpawningCondition>>();
         var locations = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations");
+        var defaultLocationData = locations["Default"];
         foreach (var location in locations)
         {
             var (locationName, locationData) = location;
             if (SkipLocation(locationName)) continue;
             
-            var fishSpawningConditions = GetFishSpawningConditions(locationData, locationName);
+            var fishSpawningConditions = GetFishSpawningConditions(locationData, defaultLocationData, locationName);
             foreach (var kv in fishSpawningConditions)
             {
                 var (fishId, spawningCondition) = kv;
@@ -39,11 +40,12 @@ public static class FishHelper
         return result;
     }
 
-    private static Dictionary<FishId, List<SpawningCondition>> GetFishSpawningConditions(LocationData locationData, string locationName)
+    private static Dictionary<FishId, List<SpawningCondition>> GetFishSpawningConditions(LocationData locationData, LocationData defaultLocationData,string locationName)
     {
         var allSeasons = Enum.GetValues<Season>().ToHashSet();
         var result = new Dictionary<FishId, List<SpawningCondition>>();
-        foreach (var fish in locationData.Fish)
+        
+        foreach (var fish in locationData.Fish.Concat(defaultLocationData.Fish))
         {
             if (fish.Season is not null)
             {
@@ -136,8 +138,9 @@ public static class FishHelper
 
     public static Dictionary<LocationArea, FishId[]>? GetFishByArea(GameLocation location)
     {
-        if (!TryGetLocationData(location, out var locationName, out var locationData)) return null;
-        var fishSpawningConditions = GetFishSpawningConditions(locationData, locationName);
+        var locations = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations");
+        if (!TryGetLocationData(location, locations, out var locationName, out var locationData)) return null;
+        var fishSpawningConditions = GetFishSpawningConditions(locationData, locations["Default"], locationName);
 
         return fishSpawningConditions
             .SelectMany(kv => kv.Value.Select(spawningCondition => new KeyValuePair<FishId, SpawningCondition>(kv.Key, spawningCondition)))
@@ -146,10 +149,11 @@ public static class FishHelper
     }
 
     private static bool TryGetLocationData(GameLocation gameLocation,
+        Dictionary<string, LocationData> locations,
         out string locationName,
         [NotNullWhen(true)] out LocationData? locationData)
     {
-        var locations = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations");
+        
         locationName = gameLocation.Name;
         if (locationName.Equals("BeachNightMarket")) locationName = "Beach";
         return locations.TryGetValue(locationName, out locationData);
