@@ -10,11 +10,19 @@ public record LocationArea(string LocationName, string AreaName, string Location
 	{
 		foreach (var location in Game1.locations)
 		{
-			if (!location.Name.Equals(LocationName, StringComparison.OrdinalIgnoreCase)) continue;
+			if (!ConvertLocationNameToDataName(location).Equals(LocationName, StringComparison.OrdinalIgnoreCase)) continue;
 			gameLocation = location;
 			return true;
 		}
 		gameLocation = null;
 		return false;
+	}
+
+	public static string ConvertLocationNameToDataName(GameLocation gameLocation)
+	{
+		var locationName = gameLocation.Name;
+		if (locationName.Equals("Farm", StringComparison.OrdinalIgnoreCase)) return $"Farm_{Game1.GetFarmTypeKey()}";
+		if (locationName.Equals("BeachNightMarket")) return "Beach";
+		return locationName;
 	}
 }

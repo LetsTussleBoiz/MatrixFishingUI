@@ -139,25 +139,15 @@ public static class FishHelper
     public static Dictionary<LocationArea, FishId[]>? GetFishByArea(GameLocation location)
     {
         var locations = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations");
-        if (!TryGetLocationData(location, locations, out var locationName, out var locationData)) return null;
+        
+        var locationName = LocationArea.ConvertLocationNameToDataName(location);
+        if (!locations.TryGetValue(locationName, out var locationData)) return null;
         var fishSpawningConditions = GetFishSpawningConditions(locationData, locations["Default"], locationName);
 
         return fishSpawningConditions
             .SelectMany(kv => kv.Value.Select(spawningCondition => new KeyValuePair<FishId, SpawningCondition>(kv.Key, spawningCondition)))
             .GroupBy(kv => kv.Value.Location)
             .ToDictionary(group => group.Key, group => group.Select(kv => kv.Key).ToArray());
-    }
-
-    private static bool TryGetLocationData(GameLocation gameLocation,
-        Dictionary<string, LocationData> locations,
-        out string locationName,
-        [NotNullWhen(true)] out LocationData? locationData)
-    {
-        
-        locationName = gameLocation.Name;
-        if (locationName.Equals("Farm", StringComparison.OrdinalIgnoreCase)) locationName = $"Farm_{Game1.GetFarmTypeKey()}";
-        if (locationName.Equals("BeachNightMarket")) locationName = "Beach";
-        return locations.TryGetValue(locationName, out locationData);
     }
     
     public static SObject GetRoeForFish(SObject fish) {

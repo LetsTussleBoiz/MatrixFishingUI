@@ -104,23 +104,25 @@ public class HudMenuData() : INotifyPropertyChanged
         if (fish.CatchInfo is null) return list;
         var requiredWeather = fish.CatchInfo.Weather;
         var locations = fish.CatchInfo.Locations;
-        var requiredSeasons = new List<LuluSeason>();
+        var requiredSeasons = new HashSet<LuluSeason>();
         if (locations is not null)
         {
             foreach (var spawningCondition in locations)
             {
                 if (!spawningCondition.Location.TryGetGameLocation(out var location)) continue;
-                if (!location.GetLocationContextId().Equals(Game1.currentLocation.GetLocationContextId(),
-                        StringComparison.OrdinalIgnoreCase)) continue;
+                if (!location.Equals(Game1.currentLocation)) continue;
                 var seasons = spawningCondition.Seasons;
-                requiredSeasons.AddRange(seasons.Select(season => season switch
+                foreach (var season in seasons)
                 {
-                    Season.Spring => LuluSeason.Spring,
-                    Season.Summer => LuluSeason.Summer,
-                    Season.Fall => LuluSeason.Fall,
-                    Season.Winter => LuluSeason.Winter,
-                    _ => LuluSeason.All
-                }));
+                    requiredSeasons.Add(season switch
+                    {
+                        Season.Spring => LuluSeason.Spring,
+                        Season.Summer => LuluSeason.Summer,
+                        Season.Fall => LuluSeason.Fall,
+                        Season.Winter => LuluSeason.Winter,
+                        _ => LuluSeason.All
+                    });
+                }
             }
         }
         var requiredLevel = fish.CatchInfo.Minlevel;
