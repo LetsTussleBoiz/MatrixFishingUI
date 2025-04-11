@@ -76,9 +76,9 @@ public static class FishHelper
 
         void AddSpawningCondition(HashSet<Season> seasons, SpawnFishData fish)
         {
-            var metadata = ItemRegistry.GetMetadata(fish.Id);
+            var metadata = ItemRegistry.GetMetadata(fish.ItemId);
+            if (metadata is null) return;
             var id = new FishId(metadata.LocalItemId);
-
             if (!result.TryGetValue(id, out var spawningConditions))
             {
                 spawningConditions = [];
