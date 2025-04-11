@@ -155,6 +155,7 @@ public static class FishHelper
     {
         
         locationName = gameLocation.Name;
+        if (locationName.Equals("Farm", StringComparison.OrdinalIgnoreCase)) locationName = $"Farm_{Game1.GetFarmTypeKey()}";
         if (locationName.Equals("BeachNightMarket")) locationName = "Beach";
         return locations.TryGetValue(locationName, out locationData);
     }
