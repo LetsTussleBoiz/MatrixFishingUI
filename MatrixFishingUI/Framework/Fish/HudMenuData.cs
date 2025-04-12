@@ -44,7 +44,7 @@ public class HudMenuData() : INotifyPropertyChanged
         LocalCatchableFish = new List<LocalFish>(FilteredCatchables.Values);
         LocalUncatchableFish = new List<LocalFish>(FilteredUncatchables.Values);
         if (counter == 0) IsThereFish = false; 
-        ModEntry.Log($"Out of {counter} local fish, {LocalCatchableFish.Count} are catchable and {LocalUncatchableFish.Count} are uncatchable.");
+        ModEntry.LogDebug($"Out of {counter} local fish, {LocalCatchableFish.Count} are catchable and {LocalUncatchableFish.Count} are uncatchable.");
     }
 
     private int TryAddFish(FishId[] fishList, string currentWeather, int currentSeasonNumber, int currentTime)

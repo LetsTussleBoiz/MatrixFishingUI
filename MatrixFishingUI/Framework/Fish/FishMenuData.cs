@@ -40,7 +40,7 @@ public class FishMenuData : INotifyPropertyChanged
         var index = Fish.IndexOf(fish);
         var nextFish = ModEntry.Fish.GetFish(index == Fish.Count-1 ? new FishId(Fish[0].Id) : new FishId(Fish[index+1].Id));
         var prevFish = ModEntry.Fish.GetFish(index == 0 ? new FishId(Fish[^1].Id) : new FishId(Fish[index-1].Id));
-        ModEntry.Log(fish.ToString() ?? string.Empty);
+        ModEntry.LogDebug(fish.ToString() ?? string.Empty);
         var context = FishInfoData.GetSingleFish(fish, prevFish, nextFish, index);
         ViewEngine.OpenChildMenu("Mods/Borealis.MatrixFishingUI/Views/FishInformation", context);
     }

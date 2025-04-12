@@ -41,7 +41,7 @@ public class FishManager
 
         _fish = working;
         _loaded = true;
-        ModEntry.Log($"Loaded {_fish.Count} fish from {_providers.Count} providers.");
+        ModEntry.LogDebug($"Loaded {_fish.Count} fish from {_providers.Count} providers.");
     }
 
     public FishInfo GetFish(FishId id)
