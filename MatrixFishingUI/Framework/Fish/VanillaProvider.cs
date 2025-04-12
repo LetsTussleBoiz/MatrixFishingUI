@@ -189,7 +189,7 @@ public class VanillaProvider : IFishProvider {
 			"156" => I18n.Specialinfo_Ghostfish(),
 			"158" => I18n.Specialinfo_Stonefish(),
 			"161" => I18n.Specialinfo_Icepip(),
-			"699" => I18n.Specialinfo_Tiger(),
+			"138" => I18n.Specialinfo_Tiger(),
 			_ => I18n.Specialinfo_None()
 		};
 

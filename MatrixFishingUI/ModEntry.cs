@@ -1,4 +1,5 @@
 ﻿using MatrixFishingUI.Framework.Fish;
+using MatrixFishingUI.integrations;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -45,206 +46,35 @@ namespace MatrixFishingUI
         private void GenerateGMCM()
         {
             // get Generic Mod Config Menu's API (if it's installed)
-            // var configMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
-            // if (configMenu is null) return;
-            //
-            // // register mod
-            // configMenu.Register(
-            //     mod: ModManifest,
-            //     reset: () => _config = new ModConfig(),
-            //     save: () => Helper.WriteConfig(_config)
-            // );
-            //
-            // // Twitch Auth
-            // configMenu.AddSectionTitle(
-            //     mod: ModManifest,
-            //     text: I18n.GMCM_Twitch_Title,
-            //     tooltip: I18n.GMCM_Twitch_Tooltip
-            // );
-            // configMenu.AddParagraph(
-            //     mod: ModManifest,
-            //     text: I18n.GMCM_Twitch_Instr
-            // );
-            // configMenu.AddTextOption(
-            //     mod: ModManifest,
-            //     name: I18n.GMCM_Twitch_Paste_Here,
-            //     getValue: () => _config.OAuthToken,
-            //     setValue: value =>
-            //     {
-            //         _config.OAuthToken = value;
-            //         Monitor.Log("Broadcaster OAuthToken saved", LogLevel.Info);
-            //     }
-            // );
-            //
+            var configMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (configMenu is null) return;
+            
+            // register mod
+            configMenu.Register(
+                mod: ModManifest,
+                reset: () => _config = new ModConfig(),
+                save: () => Helper.WriteConfig(_config)
+            );
+            
+            // Twitch Auth
+            configMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: I18n.Gmcm_Title,
+                tooltip: I18n.Gmcm_Tooltip
+            );
+            configMenu.AddKeybindList(
+                mod: ModManifest,
+                name: I18n.Gmcm_Keybind,
+                getValue: () => _config.OpenMenuKey,
+                setValue: value =>
+                {
+                    _config.OpenMenuKey = value;
+                    Log($"Fishipedia Menu Key set to: {value}");
+                }
+            );
             // configMenu.AddParagraph(
             //     mod: ModManifest,
             //     text: () => "\n"
-            // );
-            //
-            // configMenu.AddPageLink(
-            //     mod: ModManifest,
-            //     pageId: "Redeem Configuration",
-            //     text: () => "Configure Redeems"
-            //     );
-            //
-            // configMenu.AddPage(
-            //     mod: ModManifest,
-            //     pageId: "Redeem Configuration"
-            //     );
-            //
-            // // Redeem Configuration
-            // configMenu.AddSectionTitle(
-            //     mod: ModManifest,
-            //     text: I18n.GMCM_Redeems_Title,
-            //     tooltip: I18n.GMCM_Redeems_Tooltip
-            //     );
-            //
-            // configMenu.AddParagraph(
-            //     mod: ModManifest,
-            //     text: () => "\n"
-            //     );
-            //
-            // configMenu.AddSectionTitle(
-            //     mod: ModManifest,
-            //     text: I18n.GMCM_Money_Title,
-            //     tooltip: I18n.GMCM_Money_Tooltip
-            //     );
-            //
-            // configMenu.AddParagraph(
-            //     mod: ModManifest,
-            //     text: () => "\n"
-            // );
-            //
-            // configMenu.AddNumberOption(
-            //     mod: ModManifest,
-            //     name: I18n.GMCM_Money_Maximum,
-            //     getValue: () => _config.GiftMoneyMax,
-            //     setValue: value =>
-            //     { _config.GiftMoneyMax = value; }
-            //     );
-            //
-            // configMenu.AddNumberOption(
-            //     mod: ModManifest,
-            //     name: I18n.GMCM_Money_Minimum,
-            //     getValue: () => _config.GiftMoneyMin,
-            //     setValue: value =>
-            //     {
-            //         _config.GiftMoneyMin = value;
-            //     }
-            //     );
-            //
-            // configMenu.AddParagraph(
-            //     mod: ModManifest,
-            //     text: () => "\n"
-            // );
-            //
-            // configMenu.AddSectionTitle(
-            //     mod: ModManifest,
-            //     text: I18n.GMCM_Buff_Title,
-            //     tooltip: I18n.GMCM_Buff_Tooltip
-            // );
-            //
-            // configMenu.AddParagraph(
-            //     mod: ModManifest,
-            //     text: () => "\n"
-            // );
-            //
-            // configMenu.AddNumberOption(
-            //     mod: ModManifest,
-            //     name: I18n.GMCM_Buff_Duration,
-            //     getValue: () => _config.BuffDuration,
-            //     setValue: value =>
-            //     { _config.BuffDuration = value; },
-            //     min: 5,
-            //     max: 120
-            // );
-            //
-            // configMenu.AddNumberOption(
-            //     mod: ModManifest,
-            //     name: I18n.GMCM_Debuff_Duration,
-            //     getValue: () => _config.DebuffDuration,
-            //     setValue: value =>
-            //     { _config.DebuffDuration = value; },
-            //     min: 5,
-            //     max: 120
-            // );
-            //
-            // configMenu.AddParagraph(
-            //     mod: ModManifest,
-            //     text: () => "\n"
-            // );
-            //
-            // configMenu.AddSectionTitle(
-            //     mod: ModManifest,
-            //     text: I18n.GMCM_Invert_Title,
-            //     tooltip: I18n.GMCM_Invert_Tooltip
-            // );
-            //
-            // configMenu.AddParagraph(
-            //     mod: ModManifest,
-            //     text: () => "\n"
-            // );
-            //
-            // configMenu.AddNumberOption(
-            //     mod: ModManifest,
-            //     name: I18n.GMCM_Invert_Duration,
-            //     getValue: () => _config.InvertDuration,
-            //     setValue: value =>
-            //     { _config.InvertDuration = value; },
-            //     min: 5,
-            //     max: 30
-            // );
-            //
-            // configMenu.AddParagraph(
-            //     mod: ModManifest,
-            //     text: () => "\n"
-            // );
-            //
-            // configMenu.AddSectionTitle(
-            //     mod: ModManifest,
-            //     text: I18n.GMCM_Monster_Title,
-            //     tooltip: I18n.GMCM_Monster_Tooltip
-            // );
-            //
-            // configMenu.AddParagraph(
-            //     mod: ModManifest,
-            //     text: () => "\n"
-            // );
-            //
-            // configMenu.AddNumberOption(
-            //     mod: ModManifest,
-            //     name: I18n.GMCM_Monster_Amount,
-            //     getValue: () => _config.NumberOfMonsters,
-            //     setValue: value =>
-            //     { _config.NumberOfMonsters = value; },
-            //     min: 1,
-            //     max: 10
-            // );
-            //
-            // configMenu.AddParagraph(
-            //     mod: ModManifest,
-            //     text: () => "\n"
-            // );
-            //
-            // configMenu.AddSectionTitle(
-            //     mod: ModManifest,
-            //     text: I18n.GMCM_Smite_Title,
-            //     tooltip: I18n.GMCM_Smite_Tooltip
-            // );
-            //
-            // configMenu.AddParagraph(
-            //     mod: ModManifest,
-            //     text: () => "\n"
-            // );
-            //
-            // configMenu.AddNumberOption(
-            //     mod: ModManifest,
-            //     name: I18n.GMCM_Smite_Dmg,
-            //     getValue: () => _config.SmiteDamage,
-            //     setValue: value =>
-            //     { _config.SmiteDamage = value; },
-            //     min: 1,
-            //     max: 50
             // );
 
             Monitor.Log("GMCM Generated", LogLevel.Debug);

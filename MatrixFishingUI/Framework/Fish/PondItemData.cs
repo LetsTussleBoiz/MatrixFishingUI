@@ -69,9 +69,9 @@ public partial class PondItemData : INotifyPropertyChanged
 
     private static string GetSalePrice(Item item, Item fish)
     {
-        if(item.QualifiedItemId is not "(O)812") return $"[{I18n.Ui_Fishipedia_Ponds_SalePrice()} {item.salePrice()}g] ";
+        if(item.QualifiedItemId is not "(O)812") return $"[{I18n.Ui_Fishipedia_Ponds_SalePrice()} {item.salePrice()/2}g] ";
         var obj = new SObject(fish.ItemId, 1);
-        return $"[{I18n.Ui_Fishipedia_Ponds_SalePrice()} {FishHelper.GetRoeForFish(obj).salePrice()}g] ";
+        return $"[{I18n.Ui_Fishipedia_Ponds_SalePrice()} {FishHelper.GetRoeForFish(obj).salePrice()/2}g] ";
         // ItemQueryContext itemQueryContext = new();
         //
         // var result = ItemQueryResolver.DefaultResolvers.FLAVORED_ITEM(

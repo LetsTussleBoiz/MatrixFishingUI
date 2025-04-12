@@ -22,7 +22,6 @@ public partial class FishInfoData : INotifyPropertyChanged
     // Trap Fish
     public string WaterType { get; set; } = string.Empty;
     // Caught Fish
-    public List<string>? Locations { get; set; }
     public List<SpawningCondition>? LocationSeasonPairs { get; set; }
     public string SpecialInfo { get; set; } = string.Empty;
     public List<TimePair>? Times { get; set; }
@@ -51,11 +50,21 @@ public partial class FishInfoData : INotifyPropertyChanged
     
     public static FishInfoData GetSingleFish(FishInfo fish, FishInfo prevFish, FishInfo nextFish, int index)
     {
-        var locations = new List<LocationArea>();
         var times = new List<TimePair>();
+        var newLocations = new List<SpawningCondition>();
         if (fish.CatchInfo is not null)
         {
-            locations.AddRange(from spawningCondition in fish.CatchInfo.Locations ?? [] select spawningCondition.Location);
+            var spawningConditions = fish.CatchInfo.Locations;
+            if (spawningConditions is not null)
+            {
+                newLocations = spawningConditions
+                    .GroupBy(x => x.Location)
+                    .Select(group => new SpawningCondition(group.Key, group
+                        .SelectMany(x => x.Seasons)
+                        .Distinct()
+                        .ToList()))
+                    .ToList();
+            }
             times.AddRange(fish.CatchInfo.Times.Select(timeOfDay => new TimePair(timeOfDay.Start, timeOfDay.End)));
         }
         return new FishInfoData
@@ -70,8 +79,7 @@ public partial class FishInfoData : INotifyPropertyChanged
             Seasons = fish.Seasons,
             FishType = fish.FishType,
             WaterType = fish.TrapInfo?.WaterType ?? string.Empty,
-            Locations = GetLocations(locations),
-            LocationSeasonPairs = fish.CatchInfo?.Locations ?? [],
+            LocationSeasonPairs = newLocations,
             Times = times,
             FishWeather = fish.CatchInfo?.Weather,
             MinLevel = fish.CatchInfo?.Minlevel,
@@ -120,16 +128,6 @@ public partial class FishInfoData : INotifyPropertyChanged
         {
             tabViewModel.IsActive = tabViewModel.Value == tab;
         }
-    }
-
-    private static List<string> GetLocations(List<LocationArea>? list)
-    {
-        var toReturn = new List<string>();
-        if (list is null) return toReturn;
-        toReturn.AddRange(list.Select(locationArea => locationArea.TryGetGameLocation(out var location)
-            ? location.DisplayName
-            : locationArea.LocationName));
-        return toReturn;
     }
 
     #region PropertyChanges

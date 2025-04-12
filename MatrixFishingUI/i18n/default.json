@@ -57,5 +57,9 @@
   "specialinfo.icepip": "Also located on Floor 60 of the Mines with no level requirement.",
   "specialinfo.tiger": "Ignores catching conditions during the Annual Trout Derby.",
   "specialinfo.none": "No special information.",
-  "specialinfo.extended_family": "Only catchable during Mr. Qi's Extended Family Special Order."
+  "specialinfo.extended_family": "Only catchable during Mr. Qi's Extended Family Special Order.",
+
+  "gmcm.title": "Main Configuration",
+  "gmcm.tooltip": "A work in progress section containing all currently available configuration changes.",
+  "gmcm.keybind": "Set the Keybind for Fishipedia: "
 }

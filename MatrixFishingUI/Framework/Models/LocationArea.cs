@@ -25,4 +25,14 @@ public record LocationArea(string LocationName, string AreaName, string Location
 		if (locationName.Equals("BeachNightMarket")) return "Beach";
 		return locationName;
 	}
+
+	public virtual bool Equals(LocationArea? other)
+	{
+		return other is not null && LocationReadableName.Equals(other.LocationReadableName, StringComparison.OrdinalIgnoreCase);
+	}
+
+	public override int GetHashCode()
+	{
+		return LocationReadableName.GetHashCode(StringComparison.OrdinalIgnoreCase);
+	}
 }
