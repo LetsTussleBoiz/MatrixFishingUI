@@ -25,8 +25,7 @@ public partial class FishInfoData : INotifyPropertyChanged
     public List<string>? Locations { get; set; }
     public List<SpawningCondition>? LocationSeasonPairs { get; set; }
     public string SpecialInfo { get; set; } = string.Empty;
-    public string StartTime { get; set; } = string.Empty;
-    public string EndTime { get; set; } = string.Empty;
+    public List<TimePair>? Times { get; set; }
     public FishWeather? FishWeather { get; set; }
     public int? MinLevel { get; set; } = 0;
     // Pond Info
@@ -53,9 +52,11 @@ public partial class FishInfoData : INotifyPropertyChanged
     public static FishInfoData GetSingleFish(FishInfo fish, FishInfo prevFish, FishInfo nextFish, int index)
     {
         var locations = new List<LocationArea>();
+        var times = new List<TimePair>();
         if (fish.CatchInfo is not null)
         {
             locations.AddRange(from spawningCondition in fish.CatchInfo.Locations ?? [] select spawningCondition.Location);
+            times.AddRange(fish.CatchInfo.Times.Select(timeOfDay => new TimePair(timeOfDay.Start, timeOfDay.End)));
         }
         return new FishInfoData
         {
@@ -71,8 +72,7 @@ public partial class FishInfoData : INotifyPropertyChanged
             WaterType = fish.TrapInfo?.WaterType ?? string.Empty,
             Locations = GetLocations(locations),
             LocationSeasonPairs = fish.CatchInfo?.Locations ?? [],
-            StartTime = FormatTime(fish.CatchInfo?.Times[0].Start),
-            EndTime = FormatTime(fish.CatchInfo?.Times[0].End),
+            Times = times,
             FishWeather = fish.CatchInfo?.Weather,
             MinLevel = fish.CatchInfo?.Minlevel,
             Initial = fish.PondInfo?.Initial,
@@ -122,20 +122,6 @@ public partial class FishInfoData : INotifyPropertyChanged
         }
     }
 
-    private static string FormatTime(int? time)
-    {
-        var timeEdit = time / 100;
-        if (timeEdit > 12)
-        {
-            if (timeEdit >= 24)
-            {
-                return timeEdit == 24 ? $"{timeEdit - 12}:00am " : $"{timeEdit - 24}:00am ";
-            }
-            return $"{timeEdit - 12}:00pm ";
-        }
-        return $"{timeEdit}:00am ";
-    }
-
     private static List<string> GetLocations(List<LocationArea>? list)
     {
         var toReturn = new List<string>();
@@ -177,4 +163,24 @@ public partial class FishInfoTabViewModel(FishInfoTab value, bool active)
 
     [Notify] private bool isActive = active;
     public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+public class TimePair(int? startTime, int? endTime)
+{
+    public string StartTime { get; set; } = FormatTime(startTime);
+    public string EndTime { get; set; } = FormatTime(endTime);
+    
+    private static string FormatTime(int? time)
+    {
+        var timeEdit = time / 100;
+        if (timeEdit > 12)
+        {
+            if (timeEdit >= 24)
+            {
+                return timeEdit == 24 ? $"{timeEdit - 12}:00am " : $"{timeEdit - 24}:00am ";
+            }
+            return $"{timeEdit - 12}:00pm ";
+        }
+        return $"{timeEdit}:00am ";
+    }
 }

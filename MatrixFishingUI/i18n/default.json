@@ -18,7 +18,7 @@
   "ui.fishipedia.season.fall": "Fall",
   "ui.fishipedia.season.winter": "Winter",
 
-  "ui.fishipedia.time.time_available": "Time Available: ",
+  "ui.fishipedia.time.time_available": "Time(s) Available",
   "ui.fishipedia.time.between": "Between ",
   "ui.fishipedia.time.and": "and ",
 
@@ -55,6 +55,7 @@
   "specialinfo.ghostfish": "Also located on Floor 20 & Floor 60 of the Mines with no level requirement, as well as drops from Ghosts.",
   "specialinfo.stonefish": "Also located on Floor 20 of the Mines with no level requirement.",
   "specialinfo.icepip": "Also located on Floor 60 of the Mines with no level requirement.",
+  "specialinfo.tiger": "Ignores catching conditions during the Annual Trout Derby.",
   "specialinfo.none": "No special information.",
   "specialinfo.extended_family": "Only catchable during Mr. Qi's Extended Family Special Order."
 }

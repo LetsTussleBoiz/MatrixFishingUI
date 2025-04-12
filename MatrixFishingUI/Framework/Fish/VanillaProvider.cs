@@ -184,24 +184,15 @@ public class VanillaProvider : IFishProvider {
 			);
 		}
 
-		string specialInfo;
-		
-		switch (id)
+		var specialInfo = id switch
 		{
-			case "156": 
-				specialInfo = I18n.Specialinfo_Ghostfish();
-				break;
-			case "158": 
-				specialInfo = I18n.Specialinfo_Stonefish();
-				break;
-			case "161": 
-				specialInfo = I18n.Specialinfo_Icepip();
-				break;
-			default:
-				specialInfo = I18n.Specialinfo_None();
-				break;
-		}
-		
+			"156" => I18n.Specialinfo_Ghostfish(),
+			"158" => I18n.Specialinfo_Stonefish(),
+			"161" => I18n.Specialinfo_Icepip(),
+			"699" => I18n.Specialinfo_Tiger(),
+			_ => I18n.Specialinfo_None()
+		};
+
 		if (FishHelper.SkipFish(Game1.player, new FishId(id)))
 		{
 			specialInfo = I18n.Specialinfo_ExtendedFamily();

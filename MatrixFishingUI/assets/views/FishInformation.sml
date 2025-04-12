@@ -58,7 +58,7 @@
                                 tooltip={ParsedFish} /> 
                             <panel layout="stretch stretch" horizontal-content-alignment="end" vertical-content-alignment="start">
                                 <image *if={Legendary} 
-                                    layout="32px" 
+                                    layout="24px" 
                                     tooltip={#ui.fishipedia.tooltips.legendary} 
                                     sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Legendary} />
                             </panel>
@@ -104,12 +104,14 @@
                                 <label bold="true" margin="0, 8" color="#136" text={#ui.fishipedia.labels.fish_caught} />
                                 <label margin="0, 8" color="#136" text={NumberCaught} />
                             </lane>
-                            <lane orientation="horizontal" horizontal-content-alignment="middle">
+                            <lane orientation="vertical" horizontal-content-alignment="middle">
                                 <label bold="true" margin="0, 8" color="#136" text={#ui.fishipedia.time.time_available} />
-                                <label margin="0, 8" color="#136" text={#ui.fishipedia.time.between} />
-                                <label margin="0, 8" color="#136" text={StartTime} />
-                                <label margin="0, 8" color="#136" text={#ui.fishipedia.time.and} />
-                                <label margin="0, 8" color="#136" text={EndTime} />
+                                <lane *repeat={Times} orientation="horizontal" horizontal-content-alignment="middle">
+                                    <label margin="0, 8" color="#136" text={#ui.fishipedia.time.between} />
+                                    <label margin="0, 8" color="#136" text={StartTime} />
+                                    <label margin="0, 8" color="#136" text={#ui.fishipedia.time.and} />
+                                    <label margin="0, 8" color="#136" text={EndTime} />
+                                </lane>
                             </lane>
                             <lane orientation="horizontal" horizontal-content-alignment="middle">
                                 <label bold="true" margin="0, 8" color="#136" text={#ui.fishipedia.labels.fishing_level} />
@@ -191,107 +193,35 @@
                             horizontal-item-alignment="start"
                             padding="32, 0" >
                                 <lane *repeat={ProducedItems} orientation="vertical" horizontal-content-alignment="start">
-                                    <lane orientation="horizontal" horizontal-content-alignment="start">
-                                        <lane layout="64px 64px"                                                 
+                                    <lane orientation="horizontal" horizontal-content-alignment="start" vertical-content-alignment="middle">
+                                        <lane *!if={IsRoe} layout="96px 96px"                                                 
                                             focusable="true"
                                             transform-origin="0.5, 0.5"
                                             +hover:transform="scale: 1.4"
                                             +transition:transform="700ms EaseOutElastic" >
-                                                <image layout="64px"
-                                                    margin="0, 0, 0, 4"
-                                                    sprite={:Item}
-                                                    tooltip={:Item} />
-                                                <panel layout="stretch stretch" horizontal-content-alignment="end" vertical-content-alignment="end">
+                                                <panel layout="96px 96px" horizontal-content-alignment="end" vertical-content-alignment="end">
+                                                    <image layout="96px"
+                                                        margin="0, 0, 0, 4"
+                                                        sprite={:Item}
+                                                        tooltip={:Item} />
                                                     <lane orientation="horizontal" horizontal-content-alignment="middle">
-                                                        <lane *switch={MinQuantity}>
-                                                            <image *case="0"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Zero} />
-                                                            <image *case="1"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:One} />
-                                                            <image *case="2"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Two} />
-                                                            <image *case="3"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Three} />
-                                                            <image *case="4"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Four} />
-                                                            <image *case="5"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Five} />
-                                                            <image *case="6"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Six} />
-                                                            <image *case="7"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Seven} />
-                                                            <image *case="8"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Eight} />
-                                                            <image *case="9"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Nine} />
-                                                        </lane>
-                                                        <image *if={IsThereQuantity}
-                                                            layout="10px"
-                                                            margin="0, 0, 0, 4"
-                                                            sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Dash} />
-                                                        <spacer layout="6px 0px" />
-                                                        <lane *switch={MaxQuantity}>
-                                                            <image *case="0"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Zero} />
-                                                            <image *case="1"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:One} />
-                                                            <image *case="2"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Two} />
-                                                            <image *case="3"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Three} />
-                                                            <image *case="4"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Four} />
-                                                            <image *case="5"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Five} />
-                                                            <image *case="6"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Six} />
-                                                            <image *case="7"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Seven} />
-                                                            <image *case="8"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Eight} />
-                                                            <image *case="9"
-                                                                layout="20px"
-                                                                margin="0, 0, 0, 4"
-                                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Nine} />
-                                                        </lane>
+                                                        <label bold="true" text={QuantityString} color="#FFFFFF" font="small" shadow-alpha="0.8" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
+                                                    </lane>
+                                                </panel>
+                                        </lane>
+                                        <lane *if={IsRoe} layout="96px 96px"                                                 
+                                            focusable="true"
+                                            transform-origin="0.5, 0.5"
+                                            +hover:transform="scale: 1.4"
+                                            +transition:transform="700ms EaseOutElastic" >
+                                                <panel layout="96px 96px" horizontal-content-alignment="end" vertical-content-alignment="end">
+                                                    <image layout="96px"
+                                                        margin="0, 0, 0, 4"
+                                                        sprite={:Item}
+                                                        tooltip={FlavoredRoe}
+                                                        tint={RoeColor} />
+                                                    <lane orientation="horizontal" horizontal-content-alignment="middle">
+                                                        <label bold="true" text={QuantityString} color="#FFFFFF" font="small" shadow-alpha="0.8" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
                                                     </lane>
                                                 </panel>
                                         </lane>

@@ -133,14 +133,20 @@ public class HudMenuData() : INotifyPropertyChanged
         {
             requiredLevel = 0;
         }
-        var startTime = fish.CatchInfo.Times[0].Start;
-        var endTime = fish.CatchInfo.Times[0].End;
+
+        var onTime = false;
+        foreach (var (startTime, endTime) in fish.CatchInfo.Times)
+        {
+            if (currentTime >= startTime && currentTime <= endTime)
+            {
+                onTime = true;
+            }
+        }
         
-        if (currentTime < startTime || currentTime >= endTime)
+        if (!onTime)
         {
             list.Add(IsFishCatchable.Time);
         }
-
         if (requiredLevel > currentLevel)
         {
             list.Add(IsFishCatchable.Level);

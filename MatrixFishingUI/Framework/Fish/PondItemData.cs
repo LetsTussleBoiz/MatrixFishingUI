@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Internal;
 using StardewValley.ItemTypeDefinitions;
+using StardewValley.Objects;
 
 namespace MatrixFishingUI.Framework.Fish;
 
@@ -14,19 +16,51 @@ public partial class PondItemData : INotifyPropertyChanged
     public static PondItemData GetPondItems(PondInfo? pond, Item fish)
     {
         var list = new List<PondInfoModel>();
-        if (pond is not null)
+        if (pond is null)
+            return new PondItemData
+            {
+                ProducedItems = list
+            };
+        foreach (var reward in pond.FishPondRewards)
         {
-            list.AddRange(pond.FishPondRewards
-                .Select(item => new PondInfoModel(
-                    ItemRegistry.GetData(item.ItemId), 
-                    GetSalePrice(ItemRegistry.Create(item.ItemId), fish), 
-                    $"[{I18n.Ui_Fishipedia_Ponds_PopRequired()} {item.RequiredPopulation}]", 
-                    $"{item.MinStack}",
-                    $"{item.MaxStack}",
-                    item is { MinStack: > -1, MaxStack: > -1 },
-                    $"[{(item.Chance * 100).ToString(CultureInfo.InvariantCulture)}%]")));
+            var formattedQuantity = "";
+            if (reward.MinStack < reward.MaxStack)
+            {
+                formattedQuantity = $"{reward.MinStack} - {reward.MaxStack}";
+            } else if (reward.MinStack == reward.MaxStack && reward.MinStack > -1)
+            {
+                formattedQuantity = $"{reward.MinStack}";
+            }
+
+            if (ItemRegistry.GetData(reward.ItemId).QualifiedItemId is "(O)812")
+            {
+                var roe = (ColoredObject)FishHelper.GetRoeForFish(new SObject(fish.ItemId, 1));
+                list.Add(new PondInfoModel(
+                    ItemRegistry.GetData(reward.ItemId),
+                    GetSalePrice(ItemRegistry.Create(reward.ItemId), fish),
+                    $"[{I18n.Ui_Fishipedia_Ponds_PopRequired()} {reward.RequiredPopulation}]", 
+                    $"{reward.MinStack}",
+                    $"{reward.MaxStack}",
+                    formattedQuantity,
+                    $"[{Math.Round(reward.Chance * 100, 1).ToString(CultureInfo.InvariantCulture)}%]",
+                    true,
+                    roe,
+                    roe.color.Value));
+            }
+            else
+            {
+                list.Add(new PondInfoModel(
+                    ItemRegistry.GetData(reward.ItemId),
+                    GetSalePrice(ItemRegistry.Create(reward.ItemId), fish),
+                    $"[{I18n.Ui_Fishipedia_Ponds_PopRequired()} {reward.RequiredPopulation}]", 
+                    $"{reward.MinStack}",
+                    $"{reward.MaxStack}",
+                    formattedQuantity,
+                    $"[{Math.Round(reward.Chance * 100, 1).ToString(CultureInfo.InvariantCulture)}%]",
+                    false));
+            }
         }
-        
+
         return new PondItemData
         {
             ProducedItems = list
@@ -36,18 +70,20 @@ public partial class PondItemData : INotifyPropertyChanged
     private static string GetSalePrice(Item item, Item fish)
     {
         if(item.QualifiedItemId is not "(O)812") return $"[{I18n.Ui_Fishipedia_Ponds_SalePrice()} {item.salePrice()}g] ";
-        ItemQueryContext itemQueryContext = new();
-
-        var result = ItemQueryResolver.DefaultResolvers.FLAVORED_ITEM(
-            string.Empty,
-            $"{SObject.PreserveType.Roe.ToString()} {fish.QualifiedItemId}",
-            itemQueryContext,
-            avoidRepeat: true,
-            avoidItemIds: [],
-            logError: (_, _) => { })
-            .FirstOrDefault();
-
-        return result is null ? string.Empty : $"[{I18n.Ui_Fishipedia_Ponds_SalePrice()} {result.Item.salePrice()}g] ";
+        var obj = new SObject(fish.ItemId, 1);
+        return $"[{I18n.Ui_Fishipedia_Ponds_SalePrice()} {FishHelper.GetRoeForFish(obj).salePrice()}g] ";
+        // ItemQueryContext itemQueryContext = new();
+        //
+        // var result = ItemQueryResolver.DefaultResolvers.FLAVORED_ITEM(
+        //     string.Empty,
+        //     $"{SObject.PreserveType.Roe.ToString()} {fish.QualifiedItemId}",
+        //     itemQueryContext,
+        //     avoidRepeat: true,
+        //     avoidItemIds: [],
+        //     logError: (_, _) => { })
+        //     .FirstOrDefault();
+        //
+        // return result is null ? string.Empty : $"[{I18n.Ui_Fishipedia_Ponds_SalePrice()} {result.Item.salePrice()}g] ";
     }
 
     #region PropertyChanges
@@ -75,5 +111,8 @@ public record PondInfoModel(
     string PopulationRequired,
     string MinQuantity,
     string MaxQuantity,
-    bool IsThereQuantity,
-    string Chance);
+    string QuantityString,
+    string Chance,
+    bool IsRoe,
+    ColoredObject? FlavoredRoe = null,
+    Color? RoeColor = null);
