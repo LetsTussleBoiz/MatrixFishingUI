@@ -39,6 +39,10 @@
       <Content Include="assets\sprites\emojis.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="assets\views\SpecialConditions.sml" />
+      <Content Include="assets\views\SpecialConditions.sml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

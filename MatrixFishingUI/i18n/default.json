@@ -50,6 +50,9 @@
   "ui.fishipedia.labels.weather_required": "Weather Required: ",
   "ui.fishipedia.labels.seasons": "Season(s) Available: ",
   
+  "ui.special.title": "Special Condition(s)",
+  "ui.special.segment": "Condition: ",
+  
   "ui.hud.labels.no_fish": "No catchable fish in current location!",
   
   "specialinfo.ghostfish": "Also located on Floor 20 & Floor 60 of the Mines with no level requirement, as well as drops from Ghosts.",

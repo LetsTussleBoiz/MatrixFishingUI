@@ -88,16 +88,6 @@ public class HudMenuData() : INotifyPropertyChanged
             3 => LuluSeason.Winter,
             _ => LuluSeason.All
         };
-        var updatedWeather = currentWeather switch
-        {
-            "Rain" => FishWeather.Rain,
-            "GreenRain" => FishWeather.Rain,
-            "Storm" => FishWeather.Rain,
-            "Wind" => FishWeather.Sunny,
-            "Snow" => FishWeather.Sunny,
-            "Sun" => FishWeather.Sunny,
-            _ => FishWeather.Sunny
-        };
         var currentLevel = Game1.player.FishingLevel;
         var list = new List<IsFishCatchable>();
         // Can be null if it's a Trap Fish or smth non-fish
@@ -151,7 +141,8 @@ public class HudMenuData() : INotifyPropertyChanged
         {
             list.Add(IsFishCatchable.Level);
         }
-        if (requiredWeather is not FishWeather.Any && !updatedWeather.Equals(requiredWeather))
+        if (!requiredWeather.Equals("Any", StringComparison.OrdinalIgnoreCase) 
+            && !currentWeather.Equals(requiredWeather, StringComparison.OrdinalIgnoreCase))
         {
             list.Add(IsFishCatchable.Weather);
         }

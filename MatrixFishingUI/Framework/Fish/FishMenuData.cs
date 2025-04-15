@@ -10,18 +10,6 @@ public class FishMenuData : INotifyPropertyChanged
 
     public static FishMenuData GetFish()
     {
-        // int[] fishCategory = [StardewValley.Object.FishCategory];
-        // var items = ItemRegistry.ItemTypes
-        //     .Single(type => type.Identifier == ItemRegistry.type_object)
-        //     .GetAllIds()
-        //     .Select(id => ItemRegistry.GetDataOrErrorItem(id))
-        //     .Where(data => fishCategory.Contains(data.Category))
-        //     .ToList();
-        // return new()
-        // {
-        //     HeaderText = "Fishipedia",
-        //     Fish = items
-        // };
         return new FishMenuData
         {
             HeaderText = I18n.Ui_Fishipedia_Title(),

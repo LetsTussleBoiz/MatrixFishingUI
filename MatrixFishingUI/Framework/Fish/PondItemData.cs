@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using StardewValley;
-using StardewValley.Internal;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Objects;
 

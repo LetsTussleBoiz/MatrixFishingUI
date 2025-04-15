@@ -104,6 +104,9 @@
     },
     "Level": {
       "SourceRect": "421, 459, 12, 12"
+    },
+    "Exclamation": {
+      "SourceRect": "403, 496, 5, 14"
     }
   }
 }

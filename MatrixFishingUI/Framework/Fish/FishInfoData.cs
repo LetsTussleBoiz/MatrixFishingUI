@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using MatrixFishingUI.Framework.Enums;
-using MatrixFishingUI.Framework.Models;
 using PropertyChanged.SourceGenerator;
 using StardewValley;
 using StardewValley.ItemTypeDefinitions;
@@ -17,7 +15,6 @@ public partial class FishInfoData : INotifyPropertyChanged
     public bool Legendary { get; set; }
     public int MinSize { get; set; }
     public int MaxSize { get; set; }
-    public LuluSeason[]? Seasons { get; set; }
     public FishType FishType { get; set; }
     // Trap Fish
     public string WaterType { get; set; } = string.Empty;
@@ -25,7 +22,7 @@ public partial class FishInfoData : INotifyPropertyChanged
     public List<SpawningCondition>? LocationSeasonPairs { get; set; }
     public string SpecialInfo { get; set; } = string.Empty;
     public List<TimePair>? Times { get; set; }
-    public FishWeather? FishWeather { get; set; }
+    public string FishWeather { get; set; } = "";
     public int? MinLevel { get; set; } = 0;
     // Pond Info
     public int? Initial { get; set; } = 0;
@@ -72,22 +69,21 @@ public partial class FishInfoData : INotifyPropertyChanged
             Fish = fish,
             Name = fish.Name,
             Description = fish.Description,
-            ParsedFish = ItemRegistry.GetData(fish.Id),
+            ParsedFish = fish.FishData,
             Legendary = fish.Legendary,
             MinSize = fish.MinSize,
             MaxSize = fish.MaxSize,
-            Seasons = fish.Seasons,
             FishType = fish.FishType,
             WaterType = fish.TrapInfo?.WaterType ?? string.Empty,
             LocationSeasonPairs = newLocations,
             Times = times,
-            FishWeather = fish.CatchInfo?.Weather,
+            FishWeather = fish.CatchInfo?.Weather ?? string.Empty,
             MinLevel = fish.CatchInfo?.Minlevel,
             Initial = fish.PondInfo?.Initial,
             SpawnTime = fish.PondInfo?.SpawnTime,
             SpecialInfo = fish.SpecialInfo,
             SpawnTimeString = $"{I18n.Ui_Fishipedia_Spawntime_One()}{fish.PondInfo?.SpawnTime} {I18n.Ui_Fishipedia_Spawntime_Two()}",
-            PondItems = PondItemData.GetPondItems(fish.PondInfo, fish.Item),
+            PondItems = PondItemData.GetPondItems(fish.PondInfo, fish.Item ?? new SObject(fish.Id, 1)),
             CaughtStatus = fish.GetCaughtStatus(Game1.player),
             NumberCaught = fish.GetNumberCaught(Game1.player),
             BiggestCatch = fish.GetBiggestCatch(Game1.player),
@@ -96,6 +92,12 @@ public partial class FishInfoData : INotifyPropertyChanged
             Next = nextFish,
             Index = index
         };
+    }
+
+    public void ViewConditions(List<string> conditions)
+    {
+        var context = SpecialConditionData.GetSpecialConditions(conditions, Fish ?? new FishInfo());
+        ViewEngine.OpenChildMenu("Mods/Borealis.MatrixFishingUI/Views/SpecialConditions", context);
     }
 
     // ReSharper disable once UnusedMember.Global

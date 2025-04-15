@@ -47,34 +47,42 @@ public static class FishHelper
         
         foreach (var fish in locationData.Fish.Concat(defaultLocationData.Fish))
         {
+            List<string>? specialConditions = null;
+            if (fish.Condition is not null 
+                && ((!fish.Condition.Contains("LOCATION_SEASON", StringComparison.OrdinalIgnoreCase) && !fish.Condition.Contains("SEASON", StringComparison.OrdinalIgnoreCase)) 
+                    || fish.Condition.Contains("SEASON_DAY", StringComparison.OrdinalIgnoreCase)))
+            {
+                specialConditions = ParseConditionGeneric(fish.Condition);
+            }
+            
             if (fish.Season is not null)
             {
-                AddSpawningCondition([fish.Season.Value], fish);
+                AddSpawningCondition([fish.Season.Value], fish, specialConditions);
                 continue;
             }
 
             var conditionHasSeason = fish.Condition is not null &&
                 (fish.Condition.Contains("LOCATION_SEASON", StringComparison.OrdinalIgnoreCase) ||
-                 fish.Condition.Contains("SEASON", StringComparison.OrdinalIgnoreCase));
+                 fish.Condition.Contains("SEASON", StringComparison.OrdinalIgnoreCase) && !fish.Condition.Contains("SEASON_DAY", StringComparison.OrdinalIgnoreCase));
 
             if (!conditionHasSeason)
             {
-                AddSpawningCondition(allSeasons, fish);
+                AddSpawningCondition(allSeasons, fish, specialConditions);
             } else
             {
-                var parsedSeasons = ParseCondition(fish.Condition!);
+                var parsedSeasons = ParseConditionForSeason(fish.Condition!);
                 if (parsedSeasons is null)
                 {
                     ModEntry.LogWarn($"Failed to Parse Condition for {fish.ObjectDisplayName}: {fish.Condition}");
                     continue;
                 }
-                AddSpawningCondition(parsedSeasons, fish);
+                AddSpawningCondition(parsedSeasons, fish, specialConditions);
             }
         }
 
         return result;
 
-        void AddSpawningCondition(HashSet<Season> seasons, SpawnFishData fish)
+        void AddSpawningCondition(HashSet<Season> seasons, SpawnFishData fish, List<string>? specialConditions = null)
         {
             var metadata = ItemRegistry.GetMetadata(fish.ItemId);
             if (metadata is null) return;
@@ -90,11 +98,11 @@ public static class FishHelper
             {
                 locationArea = locationArea with { LocationReadableName = location.DisplayName };
             }
-            spawningConditions.Add(new SpawningCondition(locationArea, seasons.ToList()));
+            spawningConditions.Add(new SpawningCondition(locationArea, seasons.ToList(), specialConditions));
         }
     }
 
-    private static HashSet<Season>? ParseCondition(string conditionQuery)
+    private static HashSet<Season>? ParseConditionForSeason(string conditionQuery)
     {
         var conditions = conditionQuery.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var result = new HashSet<Season>();
@@ -116,6 +124,23 @@ public static class FishHelper
         
 
         return result.Count == 0 ? null : result;
+    }
+    
+    private static List<string> ParseConditionGeneric(string conditionQuery)
+    {
+        var conditions = conditionQuery.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var result = new HashSet<string>();
+        if (conditions.Length == 0)
+        {
+            result.Add("No special conditions.");
+            return result.ToList();
+        }
+        foreach (var condition in conditions)
+        {
+            result.Add(condition);
+        }
+
+        return result.ToList();
     }
     
     private static bool SkipLocation(string key)
@@ -185,4 +210,7 @@ public readonly struct FishId : IEquatable<FishId>
     public override string ToString() => Value;
 }
 
-public record SpawningCondition(LocationArea Location, List<Season> Seasons);
+public record SpawningCondition(LocationArea Location, List<Season> Seasons, List<string>? SpecialConditions = null)
+{
+    public bool HasSpecialConditions => SpecialConditions is not null;
+};

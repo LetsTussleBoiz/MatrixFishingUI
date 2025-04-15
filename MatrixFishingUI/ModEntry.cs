@@ -193,7 +193,7 @@ namespace MatrixFishingUI
 
         public static void Log(string input)
         {
-            _monitor?.Log(input, LogLevel.Info);
+            _monitor?.LogOnce(input, LogLevel.Info);
         }
         
         public static void LogError(string input)
@@ -203,17 +203,17 @@ namespace MatrixFishingUI
         
         public static void LogDebug(string input)
         {
-            _monitor?.Log(input, LogLevel.Debug);
+            _monitor?.LogOnce(input, LogLevel.Debug);
         }
         
         public static void LogWarn(string input)
         {
-            _monitor?.Log(input, LogLevel.Warn);
+            _monitor?.LogOnce(input, LogLevel.Warn);
         }
         
         public static void LogTrace(string input)
         {
-            _monitor?.Log(input);
+            _monitor?.LogOnce(input);
         }
     }
 }

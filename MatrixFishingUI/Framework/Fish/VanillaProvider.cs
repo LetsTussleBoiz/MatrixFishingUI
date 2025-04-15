@@ -1,5 +1,5 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
-using MatrixFishingUI.Framework.Enums;
 using StardewValley;
 using StardewValley.GameData.FishPonds;
 
@@ -45,146 +45,231 @@ public class VanillaProvider : IFishProvider {
 						break;
 					}
 				}
-				var info = GetFishInfo(fishId.Value, entry.Value, fishLocations ?? [], pondData);
+				var info = GetFishInfo(fishId, entry.Value, fishLocations ?? [], pondData);
 				if (info is not null) result.Add(info);
-			} catch(Exception) {
+			} catch(Exception e) {
 				ModEntry.LogWarn($"Unable to process fish: {entry.Key}");
+				ModEntry.LogError(e.ToString());
 			}
 		}
 		return result;
 	}
+	
+	private static FishInfo? GetFishInfo(FishId id, ReadOnlySpan<char> rawData, List<SpawningCondition> spawningConditions, List<FishPondData> pondData)
+	{
+		if (rawData.IsEmpty) return null;
+		
+		// Documentation: https://stardewvalleywiki.com/Modding:Fish_data
+		// "128": "Pufferfish/80/floater/1/36/1200 1600 1800 2100/summer/sunny/690 .4 685 .1/4/.3/.5/0/true",
+		// "163": "Legend/110/mixed/50/50/600 2000/spring summer fall winter/rainy/688 .05/5/0/.1/10/false",
+		// "717": "Crab/trap/.1/684 .45/ocean/1/20/false",
+		// "MNF.MoreNewFish_ladyfish": "Ladyfish/50/dart/10/39/600 1900/spring summer/sunny/681 .35/2/.3/.2/0",
+		// "FlashShifter.StardewValleyExpandedCP_Minnow": "Minnow/1/sinker/1/2/600 1800/spring summer fall winter/sunny/683 .4/1/.03/.2/0/false",
+		
+		const int indexName = 0;
+		const int indexDifficultyNumber = 1;
+		const int indexDifficultyType = 2;
+		const int indexMinFishLength = 3;
+		const int indexMaxFishLength = 4;
+		const int indexTimes = 5;
+		const int indexSeasons = 6; // Data Ignored
+		const int indexWeathers = 7;
+		const int indexLocationData = 8; // Data Ignored
+		const int indexMaxDepth = 9; // Bobber Tile Placement
+		const int indexSpawnMult = 10;
+		const int indexDepthMult = 11;
+		const int indexFishingLevel = 12;
+		const int indexFirstCatchEligible = 13; // Optional
 
-	//TODO: Optimize this method
-	private static FishInfo? GetFishInfo(string id, string data, List<SpawningCondition> locations, List<FishPondData> pondData) {
-		if (string.IsNullOrEmpty(data))
-			return null;
+		const int indexTrapSpecification = 1;
+		const int indexTrapChance = 2;
+		const int indexTrapLocationData = 3; // Data Ignored
+		const int indexWaterType = 4;
+		const int indexMinTrapLength = 5;
+		const int indexMaxTrapLength = 6;
 
-		string[] bits = data.Split('/');
-		SObject obj = new SObject(id, 1);
+		var fishInfo = new FishInfo();
 
-		if (bits.Length < 7 || obj is null)
-			return null;
-
-		int minSize;
-		int maxSize;
-
-		LuluSeason[]? seasons;
-
-		TrapFishInfo? trap = null;
-		CatchFishInfo? caught = null;
-		FishType fishType;
-		if (bits[1].Equals("trap")) {
-			// Trap Fish
-			fishType = FishType.Trap;
-			string waterType;
-			if (bits[4].Equals("freshwater", StringComparison.OrdinalIgnoreCase))
-				waterType = I18n.Watertype_Freshwater();
-			else if (bits[4].Equals("ocean", StringComparison.OrdinalIgnoreCase))
-				waterType = I18n.Watertype_Ocean();
-			else
-				waterType = bits[4];
-
-			minSize = Convert.ToInt32(bits[5]);
-			maxSize = Convert.ToInt32(bits[6]);
-
-			trap = new(waterType);
-
-			seasons = new LuluSeason[1];
-			seasons[0] = LuluSeason.All;
-		} else
+		fishInfo.Id = id.Value;
+		fishInfo.FishData = ItemRegistry.GetData(id.Value);
+		
+		var startIndex = 0;
+		var currentSectionIndex = 0;
+		for (var i = 0; i < rawData.Length; i++)
 		{
-			fishType = FishType.Catch;
-			if (bits.Length < 13)
-				return null;
-
-			minSize = Convert.ToInt32(bits[3]);
-			maxSize = Convert.ToInt32(bits[4]);
-			int minLevel = Convert.ToInt32(bits[12]);
-
-			int[] rawTimes = bits[5].Split(' ').Select(x => Convert.ToInt32(x)).ToArray();
-			TimeOfDay[] times = new TimeOfDay[rawTimes.Length / 2];
-
-			for (int i = 0, j = 0; i < times.Length && j < rawTimes.Length; i++, j += 2) {
-				times[i] = new(
-					rawTimes[j],
-					rawTimes[j + 1]
-				);
-			}
-
-			FishWeather weather;
-			switch (bits[7]) {
-				case "sunny":
-					weather = FishWeather.Sunny;
-					break;
-				case "rainy":
-					weather = FishWeather.Rain;
-					break;
-				case "both":
-					weather = FishWeather.Any;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException("weather", bits[7]);
-			}
-
-			seasons = new LuluSeason[1];
-			
-			caught = new(
-				Locations: locations,
-				Times: times,
-				Weather: weather,
-				Minlevel: minLevel
-			);
-		}
-
-		var desc = obj.getDescription();
-		if (desc != null)
-			desc = WhitespaceRegex.Replace(desc, " ");
-
-
-		// Fish Ponds
-		FishPondData? pond = null;
-		if (pondData is not null)
-			foreach (var entry in pondData) {
-				var matched = true;
-				foreach (var tag in entry.RequiredTags)
-				{
-					if (obj.HasContextTag(tag)) continue;
-					matched = false;
-					break;
-				}
-				if (!matched)
-					continue;
-
-				pond = entry;
-				break;
-			}
-
-		PondInfo? pondInfo = null;
-		if (pond != null) {
-			// Taken from FishPond
-			if (pond.SpawnTime == -1) {
-				var price = obj.Price;
-				pond.SpawnTime = price > 30 ? (price > 80 ? (price > 120 ? (price > 250 ? 5 : 4) : 3) : 2) : 1;
-			}
-			var initial = 10;
-			if (pond.PopulationGates != null)
+			if (!rawData[i].Equals('/')) continue;
+			var section = rawData.Slice(startIndex, i - startIndex);
+			startIndex = i + 1;
+			if (currentSectionIndex is indexName)
 			{
-				foreach (var key in pond.PopulationGates.Keys.Where(key => key >= initial))
-					initial = key - 1;
+				fishInfo.Name = section.ToString();
+			} else if (currentSectionIndex is indexDifficultyNumber or indexTrapSpecification)
+			{
+				if (section.Equals("Trap", StringComparison.OrdinalIgnoreCase))
+				{
+					fishInfo.TrapInfo = new TrapFishInfo();
+					fishInfo.FishType = FishType.Trap;
+				}
+				else
+				{
+					fishInfo.FishType = FishType.Catch;
+					fishInfo.CatchInfo = new CatchFishInfo
+					{
+						Locations = spawningConditions
+					};
+					fishInfo.CatchInfo.Difficulty = ParseInt(section, "Difficulty", id, defaultValue: 0);
+				}
 			}
-			pondInfo = new PondInfo(
-				Initial: initial,
-				SpawnTime: pond.SpawnTime,
-				ProducedItems: pond.ProducedItems
-					.Select(x => x.ItemId)
-					.Distinct()
-					.Select(x => (x == "812" ? FishHelper.GetRoeForFish(obj) : ItemRegistry.Create(x, 1)))
-					.ToList(),
-				FishPondRewards: pond.ProducedItems
-			);
-		}
 
-		var specialInfo = id switch
+			if (fishInfo.FishType is FishType.Catch)
+			{
+				if (currentSectionIndex is indexDifficultyType)
+				{
+					if (fishInfo.CatchInfo is not null)
+					{
+						fishInfo.CatchInfo.DifficultyType = section.ToString();
+					}
+					else
+					{
+						ModEntry.LogWarn($"Parsed Fish encountered a null CatchInfo. ID: {id}, Failed Info: Difficulty Type");
+					}
+				} else if (currentSectionIndex is indexMinFishLength)
+				{
+					fishInfo.MinSize = ParseInt(section, "Catch MinSize", id, defaultValue: -1);
+				} else if (currentSectionIndex is indexMaxFishLength)
+				{
+					fishInfo.MaxSize = ParseInt(section, "Catch MaxSize", id, defaultValue: -1);
+				} else if (currentSectionIndex is indexTimes)
+				{
+					if (fishInfo.CatchInfo is not null)
+					{
+						SortedList<int, int> rawTimes = [];
+						var timeStartIndex = 0;
+						// TODO: Alternate Florian Method
+						for (var j = 0; j < section.Length; j++)
+						{
+							if (!section[j].Equals(' ')) continue;
+							if (int.TryParse(section.Slice(timeStartIndex, j - timeStartIndex), out var result))
+							{
+								rawTimes.Add(rawTimes.Count, result);
+								timeStartIndex = j + 1;
+								if (int.TryParse(section.Slice(timeStartIndex, section.Length - timeStartIndex), out var otherResult))
+								{
+									rawTimes.Add(rawTimes.Count, otherResult);
+									break;
+								}
+							}
+							else
+							{
+								ModEntry.LogWarn($"Parsed Fish has no valid time value(s). ID: {id}, Bad Value: {section.ToString()}");
+							}
+						}
+						if (rawTimes.Count > 1)
+						{
+							var times = new List<TimeOfDay>();
+							for (int j = 0, k = 0; j < rawTimes.Count/2 && k < rawTimes.Count/2; j++, k += 2)
+							{
+								if (rawTimes.TryGetValue(k, out var start) && rawTimes.TryGetValue(k + 1, out var end))
+								{
+									times.Add(new TimeOfDay(start, end));
+								}
+							}
+							fishInfo.CatchInfo.Times = times;
+						}
+						else
+						{
+							ModEntry.LogWarn($"Parsed Fish has less than two valid times. ID: {id}, Bad Value: {section.ToString()}");
+						}
+					}
+					else
+					{
+						ModEntry.LogWarn($"Parsed Fish encountered a null CatchInfo. ID: {id}, Failed Info: Times");
+					}
+				} else if (currentSectionIndex is indexWeathers)
+				{
+					if (fishInfo.CatchInfo is not null)
+					{
+						fishInfo.CatchInfo.Weather = section.ToString() switch
+						{
+							"sunny" => "Sunny",
+							"rainy" => "Rain",
+							"both" => "Any",
+							_ => section.ToString()
+						};
+					}
+					else
+					{
+						ModEntry.LogWarn($"Parsed Fish encountered a null CatchInfo. ID: {id}, Failed Info: Weather");
+					}
+				} else if (currentSectionIndex is indexMaxDepth)
+				{
+					// TODO: Implement
+				} else if (currentSectionIndex is indexSpawnMult)
+				{
+					// TODO: Implement
+				} else if (currentSectionIndex is indexDepthMult)
+				{
+					// TODO: Implement
+				} else if (currentSectionIndex is indexFishingLevel)
+				{
+					if (fishInfo.CatchInfo is not null)
+					{
+						fishInfo.CatchInfo.Minlevel = ParseInt(section, "Min Level", id, defaultValue: -1);
+					}
+					else
+					{
+						ModEntry.LogWarn($"Parsed Fish encountered a null CatchInfo. ID: {id}, Failed Info: Fishing Level");
+					}
+				} else if (currentSectionIndex is indexFirstCatchEligible)
+				{
+					// TODO: Implement
+				}
+			}
+			else
+			{
+				if (currentSectionIndex is indexTrapChance)
+				{
+					if (fishInfo.TrapInfo is not null)
+					{
+						fishInfo.TrapInfo.CatchChance = ParseFloat(section, "Trap MinSize", id, defaultValue: 0);
+					}
+					else
+					{
+						ModEntry.LogWarn($"Parsed Trap Fish encountered a null TrapInfo. ID: {id}, Failed Info: Catch Chance");
+					}
+				} else if (currentSectionIndex is indexWaterType)
+				{
+					if (fishInfo.TrapInfo is not null)
+					{
+						if (section.Equals("freshwater", StringComparison.OrdinalIgnoreCase))
+						{
+							fishInfo.TrapInfo.WaterType = I18n.Watertype_Freshwater();
+						} else if (section.Equals("ocean", StringComparison.OrdinalIgnoreCase))
+						{
+							fishInfo.TrapInfo.WaterType = I18n.Watertype_Ocean();
+						}
+						else
+						{
+							fishInfo.TrapInfo.WaterType = section.ToString();
+						}
+					}
+					else
+					{
+						ModEntry.LogWarn($"Parsed Trap Fish encountered a null TrapInfo. ID: {id}, Failed Info: Water Type");
+					}
+				} else if (currentSectionIndex is indexMinTrapLength)
+				{
+					fishInfo.MinSize = ParseInt(section, "Trap MinSize", id, defaultValue: -1);
+				} else if (currentSectionIndex is indexMaxTrapLength)
+				{
+					fishInfo.MaxSize = ParseInt(section, "Trap MaxSize", id, defaultValue: -1);
+				}
+			}
+			
+			currentSectionIndex ++;
+		}
+		
+		fishInfo.SpecialInfo = id.Value switch
 		{
 			"156" => I18n.Specialinfo_Ghostfish(),
 			"158" => I18n.Specialinfo_Stonefish(),
@@ -193,28 +278,84 @@ public class VanillaProvider : IFishProvider {
 			_ => I18n.Specialinfo_None()
 		};
 
-		if (FishHelper.SkipFish(Game1.player, new FishId(id)))
+		if (FishHelper.SkipFish(Game1.player, id))
 		{
-			specialInfo = I18n.Specialinfo_ExtendedFamily();
+			fishInfo.SpecialInfo = I18n.Specialinfo_ExtendedFamily();
 		}
 
-		var legend = obj.HasContextTag("fish_legendary");
-		return new FishInfo(
-			Id: id, // bits[0],
-			Item: obj,
-			FishData: ItemRegistry.GetData(id),
-			Name: obj.DisplayName,
-			Description: desc,
-			SpecialInfo: specialInfo,
-			Sprite: ItemRegistry.GetData(obj.ItemId).GetTexture(),
-			Legendary: legend,
-			MinSize: minSize,
-			MaxSize: maxSize,
-			Seasons: seasons,
-			FishType: fishType,
-			TrapInfo: trap,
-			CatchInfo: caught,
-			PondInfo: pondInfo
-		);
+		fishInfo.Item = new SObject(id.Value, 1);
+		fishInfo.Legendary = fishInfo.Item.HasContextTag("fish_legendary");
+		fishInfo.Description = fishInfo.Item.getDescription();
+		if (fishInfo.Description is not null)
+			fishInfo.Description = WhitespaceRegex.Replace(fishInfo.Description, " ");
+
+		// Pond Information
+		var pondInfo = new PondInfo();
+		FishPondData? correctPond = null;
+		foreach (var pond in pondData)
+		{
+			var matched = true;
+			foreach (var tag in pond.RequiredTags)
+			{
+				if (fishInfo.Item.HasContextTag(tag)) continue;
+				matched = false;
+				break;
+			}
+
+			if (!matched) continue;
+
+			correctPond = pond;
+			break;
+		}
+
+		if (correctPond is not null)
+		{
+			if (correctPond.SpawnTime == -1)
+			{
+				var price = fishInfo.Item.salePrice();
+				pondInfo.SpawnTime = price > 30 ? (price > 80 ? (price > 120 ? (price > 250 ? 5 : 4) : 3) : 2) : 1;
+			}
+
+			var initial = 10;
+			if (correctPond.PopulationGates != null)
+			{
+				foreach (var key in correctPond.PopulationGates.Keys.Where(key => key >= initial))
+					initial = key - 1;
+			}
+
+			pondInfo.Initial = initial;
+			pondInfo.ProducedItems = correctPond.ProducedItems
+				.Select(x => x.ItemId)
+				.Distinct()
+				.Select(x => (x == "812" ? FishHelper.GetRoeForFish((SObject)fishInfo.Item) : ItemRegistry.Create(x, 1)))
+				.ToList();
+			pondInfo.FishPondRewards = correctPond.ProducedItems;
+		}
+
+		fishInfo.PondInfo = pondInfo;
+		
+		return fishInfo;
+	}
+
+	private static int ParseInt(ReadOnlySpan<char> input, string name, FishId id, int defaultValue = 0)
+	{
+		if (int.TryParse(input, out var result))
+		{
+			return result;
+		}
+
+		ModEntry.LogWarn($"Failed to parse integer for {name}. ID: {id.Value}, Bad Value: {input.ToString()}");
+		return defaultValue;
+	}
+	
+	private static float ParseFloat(ReadOnlySpan<char> input, string name, FishId id, float defaultValue = 0)
+	{
+		if (float.TryParse(input, NumberStyles.Float, CultureInfo.InvariantCulture, out var result))
+		{
+			return result;
+		}
+
+		ModEntry.LogWarn($"Failed to parse float for {name}. ID: {id.Value}, Bad Value: {input.ToString()}");
+		return defaultValue;
 	}
 }
