@@ -185,9 +185,6 @@ namespace MatrixFishingUI
             ViewEngine = Helper.ModRegistry.GetApi<IViewEngine>("focustense.StardewUI");
             ViewEngine?.RegisterViews("Mods/Borealis.MatrixFishingUI/Views", "assets/views");
             ViewEngine?.RegisterSprites("Mods/Borealis.MatrixFishingUI/Sprites", "assets/sprites");
-#if DEBUG
-            ViewEngine?.EnableHotReloading();
-#endif
             GenerateGMCM();
         }
 

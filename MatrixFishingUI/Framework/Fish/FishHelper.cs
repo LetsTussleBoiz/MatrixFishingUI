@@ -45,7 +45,7 @@ public static class FishHelper
         var allSeasons = Enum.GetValues<Season>().ToHashSet();
         var result = new Dictionary<FishId, List<SpawningCondition>>();
         
-        foreach (var fish in locationData.Fish.Concat(defaultLocationData.Fish))
+        foreach (var fish in locationData.Fish)
         {
             List<string>? specialConditions = null;
             if (fish.Condition is not null 

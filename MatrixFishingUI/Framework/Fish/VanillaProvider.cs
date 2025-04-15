@@ -121,18 +121,11 @@ public class VanillaProvider : IFishProvider {
 				}
 			}
 
-			if (fishInfo.FishType is FishType.Catch)
+			if (fishInfo.FishType is FishType.Catch && fishInfo.CatchInfo is not null)
 			{
 				if (currentSectionIndex is indexDifficultyType)
 				{
-					if (fishInfo.CatchInfo is not null)
-					{
-						fishInfo.CatchInfo.DifficultyType = section.ToString();
-					}
-					else
-					{
-						ModEntry.LogWarn($"Parsed Fish encountered a null CatchInfo. ID: {id}, Failed Info: Difficulty Type");
-					}
+					fishInfo.CatchInfo.DifficultyType = section.ToString();
 				} else if (currentSectionIndex is indexMinFishLength)
 				{
 					fishInfo.MinSize = ParseInt(section, "Catch MinSize", id, defaultValue: -1);
@@ -141,66 +134,16 @@ public class VanillaProvider : IFishProvider {
 					fishInfo.MaxSize = ParseInt(section, "Catch MaxSize", id, defaultValue: -1);
 				} else if (currentSectionIndex is indexTimes)
 				{
-					if (fishInfo.CatchInfo is not null)
-					{
-						SortedList<int, int> rawTimes = [];
-						var timeStartIndex = 0;
-						// TODO: Alternate Florian Method
-						for (var j = 0; j < section.Length; j++)
-						{
-							if (!section[j].Equals(' ')) continue;
-							if (int.TryParse(section.Slice(timeStartIndex, j - timeStartIndex), out var result))
-							{
-								rawTimes.Add(rawTimes.Count, result);
-								timeStartIndex = j + 1;
-								if (int.TryParse(section.Slice(timeStartIndex, section.Length - timeStartIndex), out var otherResult))
-								{
-									rawTimes.Add(rawTimes.Count, otherResult);
-									break;
-								}
-							}
-							else
-							{
-								ModEntry.LogWarn($"Parsed Fish has no valid time value(s). ID: {id}, Bad Value: {section.ToString()}");
-							}
-						}
-						if (rawTimes.Count > 1)
-						{
-							var times = new List<TimeOfDay>();
-							for (int j = 0, k = 0; j < rawTimes.Count/2 && k < rawTimes.Count/2; j++, k += 2)
-							{
-								if (rawTimes.TryGetValue(k, out var start) && rawTimes.TryGetValue(k + 1, out var end))
-								{
-									times.Add(new TimeOfDay(start, end));
-								}
-							}
-							fishInfo.CatchInfo.Times = times;
-						}
-						else
-						{
-							ModEntry.LogWarn($"Parsed Fish has less than two valid times. ID: {id}, Bad Value: {section.ToString()}");
-						}
-					}
-					else
-					{
-						ModEntry.LogWarn($"Parsed Fish encountered a null CatchInfo. ID: {id}, Failed Info: Times");
-					}
+					fishInfo.CatchInfo.Times = ParseTimes(section, id);
 				} else if (currentSectionIndex is indexWeathers)
 				{
-					if (fishInfo.CatchInfo is not null)
+					fishInfo.CatchInfo.Weather = section.ToString() switch
 					{
-						fishInfo.CatchInfo.Weather = section.ToString() switch
-						{
-							"sunny" => "Sunny",
-							"rainy" => "Rain",
-							"both" => "Any",
-							_ => section.ToString()
-						};
-					}
-					else
-					{
-						ModEntry.LogWarn($"Parsed Fish encountered a null CatchInfo. ID: {id}, Failed Info: Weather");
-					}
+						"sunny" => "Sunny",
+						"rainy" => "Rain",
+						"both" => "Any",
+						_ => section.ToString()
+					};
 				} else if (currentSectionIndex is indexMaxDepth)
 				{
 					// TODO: Implement
@@ -212,50 +155,29 @@ public class VanillaProvider : IFishProvider {
 					// TODO: Implement
 				} else if (currentSectionIndex is indexFishingLevel)
 				{
-					if (fishInfo.CatchInfo is not null)
-					{
-						fishInfo.CatchInfo.Minlevel = ParseInt(section, "Min Level", id, defaultValue: -1);
-					}
-					else
-					{
-						ModEntry.LogWarn($"Parsed Fish encountered a null CatchInfo. ID: {id}, Failed Info: Fishing Level");
-					}
+					fishInfo.CatchInfo.Minlevel = ParseInt(section, "Min Level", id, defaultValue: -1);
 				} else if (currentSectionIndex is indexFirstCatchEligible)
 				{
 					// TODO: Implement
 				}
 			}
-			else
+			else if (fishInfo.TrapInfo is not null)
 			{
 				if (currentSectionIndex is indexTrapChance)
 				{
-					if (fishInfo.TrapInfo is not null)
-					{
-						fishInfo.TrapInfo.CatchChance = ParseFloat(section, "Trap MinSize", id, defaultValue: 0);
-					}
-					else
-					{
-						ModEntry.LogWarn($"Parsed Trap Fish encountered a null TrapInfo. ID: {id}, Failed Info: Catch Chance");
-					}
+					fishInfo.TrapInfo.CatchChance = ParseFloat(section, "Trap MinSize", id, defaultValue: 0);
 				} else if (currentSectionIndex is indexWaterType)
 				{
-					if (fishInfo.TrapInfo is not null)
+					if (section.Equals("freshwater", StringComparison.OrdinalIgnoreCase))
 					{
-						if (section.Equals("freshwater", StringComparison.OrdinalIgnoreCase))
-						{
-							fishInfo.TrapInfo.WaterType = I18n.Watertype_Freshwater();
-						} else if (section.Equals("ocean", StringComparison.OrdinalIgnoreCase))
-						{
-							fishInfo.TrapInfo.WaterType = I18n.Watertype_Ocean();
-						}
-						else
-						{
-							fishInfo.TrapInfo.WaterType = section.ToString();
-						}
+						fishInfo.TrapInfo.WaterType = I18n.Watertype_Freshwater();
+					} else if (section.Equals("ocean", StringComparison.OrdinalIgnoreCase))
+					{
+						fishInfo.TrapInfo.WaterType = I18n.Watertype_Ocean();
 					}
 					else
 					{
-						ModEntry.LogWarn($"Parsed Trap Fish encountered a null TrapInfo. ID: {id}, Failed Info: Water Type");
+						fishInfo.TrapInfo.WaterType = section.ToString();
 					}
 				} else if (currentSectionIndex is indexMinTrapLength)
 				{
@@ -357,5 +279,35 @@ public class VanillaProvider : IFishProvider {
 
 		ModEntry.LogWarn($"Failed to parse float for {name}. ID: {id.Value}, Bad Value: {input.ToString()}");
 		return defaultValue;
+	}
+	
+	private static List<TimeOfDay> ParseTimes(ReadOnlySpan<char> input, FishId id)
+	{
+		const int defaultStartTime = 600;
+		const int defaultEndTime = 2600;
+		
+		var currentSpan = input;
+		int index;
+		
+		List<TimeOfDay> times = [];
+		
+		while ((index = currentSpan.IndexOf(' ')) != -1)
+		{
+			var timeOneSlice = currentSpan.Slice(0, index);
+			currentSpan = currentSpan.Slice(index + 1);
+			index = currentSpan.IndexOf(' ');
+			var timeTwoSlice = index == -1 ? currentSpan : currentSpan.Slice(0, index);
+			
+			times.Add(new TimeOfDay(
+				ParseInt(timeOneSlice, "TimeStart", id, defaultStartTime), 
+				ParseInt(timeTwoSlice, "TimeEnd", id, defaultEndTime)));
+			
+			if (index != -1)
+			{
+				currentSpan = currentSpan.Slice(index + 1);
+			}
+		}
+
+		return times;
 	}
 }
