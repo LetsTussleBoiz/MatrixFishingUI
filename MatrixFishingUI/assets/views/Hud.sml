@@ -9,7 +9,7 @@
 <!--Main UI-->
     <frame layout="300px content" padding="16" background={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:HudBorder}>
 <!--Currently Catchable Fish-->
-        <lane *switch={IsThereFish} orientation="vertical" horizontal-content-alignment="middle" layout="stretch content">
+        <lane *switch={:IsThereFish} orientation="vertical" horizontal-content-alignment="middle" layout="stretch content">
             <lane *case="true" orientation="vertical" horizontal-content-alignment="middle" layout="stretch content">
                 <grid layout="stretch content"
                     item-layout="count: 4"
@@ -17,11 +17,11 @@
                     horizontal-item-alignment="start">
                         <lane *repeat={:LocalCatchableFish} layout="stretch content">
                             <lane layout="64px 64px">
-                                <image *if={HasBeenCaught}
+                                <image *if={:HasBeenCaught}
                                     layout="64px"
                                     margin="0, 0, 0, 4"
                                     sprite={:ParsedFish} />
-                                <image *!if={HasBeenCaught}
+                                <image *!if={:HasBeenCaught}
                                     layout="64px"
                                     margin="0, 0, 0, 4"
                                     tint="#0006"
@@ -41,11 +41,11 @@
                     horizontal-item-alignment="start">
                         <lane *repeat={:LocalUncatchableFish} layout="stretch content">
                             <lane layout="64px 64px">
-                                <image *if={HasBeenCaught}
+                                <image *if={:HasBeenCaught}
                                     layout="64px"
                                     margin="0, 0, 0, 4"
                                     sprite={:ParsedFish} />
-                                <image *!if={HasBeenCaught}
+                                <image *!if={:HasBeenCaught}
                                     layout="64px"
                                     margin="0, 0, 0, 4"
                                     tint="#0006"
