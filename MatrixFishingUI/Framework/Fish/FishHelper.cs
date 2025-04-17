@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using MatrixFishingUI.Framework.Models;
+using MatrixFishingUI.integrations;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.GameData;
@@ -12,12 +13,12 @@ namespace MatrixFishingUI.Framework.Fish;
 
 public static class FishHelper
 {
+    private static HashSet<string>? FarmLocalTypes { get; set; }
 
     public static Dictionary<FishId, List<SpawningCondition>> GetFishSpawningConditions()
     {
         var result = new Dictionary<FishId, List<SpawningCondition>>();
-        var locations = DataLoader.Locations(Game1.content);
-        var farms = DataLoader.AdditionalFarms(Game1.content);
+        var locations = GetLocations()!;
         var defaultLocationData = locations["Default"];
         foreach (var location in locations)
         {
@@ -42,7 +43,78 @@ public static class FishHelper
         return result;
     }
 
-    private static Dictionary<FishId, List<SpawningCondition>> GetFishSpawningConditions(LocationData locationData, LocationData defaultLocationData,string locationName)
+    private static HashSet<string>? EscaHandling(GameLocation location)
+    {
+        if (ModEntry.EscasApi is null) return null;
+        if (FarmLocalTypes is not null) return FarmLocalTypes;
+        HashSet<string> locationTypes = [];
+        var waterTiles = location.waterTiles.waterTiles;
+        for (int x = 0; x < waterTiles.GetLength(0); x++)
+        {
+            for (int y = 0; y < waterTiles.GetLength(1); y++)
+            {
+                if (!waterTiles[x, y].isWater) continue;
+                ModEntry.EscasApi.GetFishLocationsData(location, new Vector2(x, y), 
+                    out var useLocationName, out _, out _);
+                if(!string.IsNullOrEmpty(useLocationName)) locationTypes.Add(useLocationName);
+            }
+        }
+
+        FarmLocalTypes = locationTypes;
+        return locationTypes;
+    }
+
+    public static void InvalidateCache()
+    {
+        FarmLocalTypes = null;
+    }
+
+    private static Dictionary<string, LocationData>? GetLocations()
+    {
+        var locations = DataLoader.Locations(Game1.content);
+        GameLocation? farm = null;
+        LocationData? farmData = null;
+        
+        try
+        {
+            farm = Game1.RequireLocation("Farm");
+            farmData = farm.GetData();
+            if (farmData is null)
+            {
+                ModEntry.LogWarn("Cannot find locationData for Farm.");
+            }
+        }
+        catch (Exception e)
+        {
+            ModEntry.LogError($"Exception thrown when attempting to find Farm data: {e}");
+        }
+
+        if (farm is not null)
+        {
+            var escaLocations = EscaHandling(farm);
+            if (escaLocations is not null && farmData is not null)
+            {
+                foreach (var locationName in escaLocations)
+                {
+                    if (locations.TryGetValue(locationName, out var locationData))
+                    {
+                        farmData.Fish.AddRange(locationData.Fish);
+                    }
+                    else
+                    {
+                        ModEntry.LogWarn($"The following location was not found via Esca: {locationName}");
+                    }
+                }
+            }
+            locations["Farm"] = farmData;
+        }
+        return locations;
+    }
+
+    private static Dictionary<FishId, List<SpawningCondition>> GetFishSpawningConditions(
+        LocationData locationData, 
+        LocationData defaultLocationData, 
+        string locationName)
     {
         var allSeasons = Enum.GetValues<Season>().ToHashSet();
         var result = new Dictionary<FishId, List<SpawningCondition>>();
@@ -165,7 +237,7 @@ public static class FishHelper
 
     public static Dictionary<LocationArea, FishId[]>? GetFishByArea(GameLocation location)
     {
-        var locations = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations");
+        var locations = GetLocations()!;
         
         var locationName = LocationArea.ConvertLocationNameToDataName(location);
         if (!locations.TryGetValue(locationName, out var locationData)) return null;

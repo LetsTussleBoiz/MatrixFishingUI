@@ -15,6 +15,7 @@ namespace MatrixFishingUI
         private static ModConfig _config = null!;
         private static IMonitor? _monitor;
         public static IViewEngine? ViewEngine;
+        public static IEmpApi? EscasApi { get; private set; }
         internal static FishManager Fish = null!;
         private bool _canShowHud;
         private IViewDrawable? _hudWidget;
@@ -112,6 +113,7 @@ namespace MatrixFishingUI
         
         private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
         {
+            FishHelper.InvalidateCache();
             Fish.RefreshFish();
         }
         
@@ -154,7 +156,6 @@ namespace MatrixFishingUI
                 var data = new HudMenuData();
                 data.UpdateLocalFish(Fish.GetAllFish());
                 _hudWidget.Context = data;
-                // TODO: If code explodes this is why
             }
         }
 
@@ -182,6 +183,7 @@ namespace MatrixFishingUI
         /// <summary>Raised after game is launched.</summary>
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
         {
+            EscasApi = Helper.ModRegistry.GetApi<IEmpApi>("Esca.EMP");
             ViewEngine = Helper.ModRegistry.GetApi<IViewEngine>("focustense.StardewUI");
             ViewEngine?.RegisterViews("Mods/Borealis.MatrixFishingUI/Views", "assets/views");
             ViewEngine?.RegisterSprites("Mods/Borealis.MatrixFishingUI/Sprites", "assets/sprites");

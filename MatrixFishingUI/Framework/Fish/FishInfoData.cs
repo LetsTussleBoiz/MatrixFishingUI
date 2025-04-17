@@ -33,7 +33,6 @@ public partial class FishInfoData : INotifyPropertyChanged
     public CaughtStatus CaughtStatus { get; set; }
     public int NumberCaught { get; set; }
     public int BiggestCatch { get; set; }
-    // TODO: Optimize FishInfo indexing
     [Notify] private FishInfo? previous;
     [Notify] private FishInfo? current;
     [Notify] private FishInfo? next;
