@@ -64,5 +64,13 @@
 
   "gmcm.title": "Main Configuration",
   "gmcm.tooltip": "A work in progress section containing all currently available configuration changes.",
-  "gmcm.keybind": "Set the Keybind for Fishipedia: "
+  "gmcm.keybind": "Set the Keybind for Fishipedia: ",
+  "gmcm.hud_size": "HUD Size (Percentage): ",
+  "gmcm.columns": "HUD Fish Columns: ",
+  "gmcm.hide_collected_name": "Hide Collected Fish in HUD: ",
+  "gmcm.hide_collected_tooltip": "A toggle to hide any fish you've already caught from showing in the Fish HUD.",
+  "gmcm.hide_daily_name": "Show Fish Only Catchable Today in HUD: ",
+  "gmcm.hide_daily_tooltip": "A toggle to hide any fish that cannot be caught in the current given day. Useful if you have an ENORMOUS amount of fish.",
+  "gmcm.hide_season_name": "Show Fish Only Catchable This Season in HUD: ",
+  "gmcm.hide_season_tooltip": "A toggle to hide any fish that cannot be caught in the current season. Useful if you have a lot of fish."
 }
