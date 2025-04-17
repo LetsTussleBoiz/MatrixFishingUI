@@ -69,8 +69,8 @@
   "gmcm.columns": "HUD Fish Columns: ",
   "gmcm.hide_collected_name": "Hide Collected Fish in HUD: ",
   "gmcm.hide_collected_tooltip": "A toggle to hide any fish you've already caught from showing in the Fish HUD.",
-  "gmcm.hide_daily_name": "Show Fish Only Catchable Today in HUD: ",
-  "gmcm.hide_daily_tooltip": "A toggle to hide any fish that cannot be caught in the current given day. Useful if you have an ENORMOUS amount of fish.",
-  "gmcm.hide_season_name": "Show Fish Only Catchable This Season in HUD: ",
+  "gmcm.hide_daily_name": "Only Today's Fish: ",
+  "gmcm.hide_daily_tooltip": "A toggle to hide any fish that cannot be caught in the current given day. Useful if you have an ENORMOUS amount of fish. (overrides Only Seasonal)",
+  "gmcm.hide_season_name": "Only Seasonal Fish: ",
   "gmcm.hide_season_tooltip": "A toggle to hide any fish that cannot be caught in the current season. Useful if you have a lot of fish."
 }
