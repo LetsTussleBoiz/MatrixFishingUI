@@ -5,18 +5,17 @@ namespace MatrixFishingUI.Framework.Fish;
 
 public class SpecialConditionData : INotifyPropertyChanged
 {
-    
     public FishInfo Fish { get; set; } = null!;
     public string HeaderText { get; set; } = "";
     public List<string> Conditions { get; set; } = [];
     
-    public static SpecialConditionData GetSpecialConditions(List<string> conditions, FishInfo fish)
+    public static SpecialConditionData GetSpecialConditions(List<string>? conditions, FishInfo fish)
     {
         return new SpecialConditionData
         {
             HeaderText = fish.Name,
             Fish = fish,
-            Conditions = conditions
+            Conditions = conditions ?? []
         };
     }
 

@@ -177,13 +177,14 @@
                                             </lane>
                                         </lane>
                                         <spacer layout="4px 0px" />
-                                        <lane *if={:HasSpecialConditions}>
+                                        <lane *if={:HasSpecialConditions} *context={:Location}>
                                             <image layout="15px 42px"
                                                 horizontal-alignment="middle"
                                                 vertical-alignment="middle"
                                                 sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Exclamation}
+                                                tooltip="Special Condition(s)"
                                                 focusable="true"
-                                                click=|ViewConditions(SpecialConditions)| />
+                                                click=|^^ViewConditions(LocationName)| />
                                         </lane>
                                     </lane>
                                 </lane>

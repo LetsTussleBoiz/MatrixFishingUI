@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using MatrixFishingUI.Framework.Models;
 using Microsoft.Xna.Framework;
 using StardewValley;
+using StardewValley.GameData;
 using StardewValley.GameData.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -15,7 +16,8 @@ public static class FishHelper
     public static Dictionary<FishId, List<SpawningCondition>> GetFishSpawningConditions()
     {
         var result = new Dictionary<FishId, List<SpawningCondition>>();
-        var locations = Game1.content.Load<Dictionary<string, LocationData>>("Data\\Locations");
+        var locations = DataLoader.Locations(Game1.content);
+        var farms = DataLoader.AdditionalFarms(Game1.content);
         var defaultLocationData = locations["Default"];
         foreach (var location in locations)
         {
@@ -212,5 +214,5 @@ public readonly struct FishId : IEquatable<FishId>
 
 public record SpawningCondition(LocationArea Location, List<Season> Seasons, List<string>? SpecialConditions = null)
 {
-    public bool HasSpecialConditions => SpecialConditions is not null;
+    public bool HasSpecialConditions => SpecialConditions is not null && SpecialConditions.Count > 0;
 };

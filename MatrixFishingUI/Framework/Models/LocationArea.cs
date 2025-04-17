@@ -21,7 +21,25 @@ public record LocationArea(string LocationName, string AreaName, string Location
 	public static string ConvertLocationNameToDataName(GameLocation gameLocation)
 	{
 		var locationName = gameLocation.Name;
-		if (locationName.Equals("Farm", StringComparison.OrdinalIgnoreCase)) return $"Farm_{Game1.GetFarmTypeKey()}";
+		if (locationName.Equals("Farm", StringComparison.OrdinalIgnoreCase)
+		    && (Game1.GetFarmTypeKey().Equals("Standard", StringComparison.OrdinalIgnoreCase)
+		        || Game1.GetFarmTypeKey().Equals("Beach", StringComparison.OrdinalIgnoreCase)
+		        || Game1.GetFarmTypeKey().Equals("Forest", StringComparison.OrdinalIgnoreCase)
+		        || Game1.GetFarmTypeKey().Equals("FourCorners", StringComparison.OrdinalIgnoreCase)
+		        || Game1.GetFarmTypeKey().Equals("Hilltop", StringComparison.OrdinalIgnoreCase)
+		        || Game1.GetFarmTypeKey().Equals("Wilderness", StringComparison.OrdinalIgnoreCase)
+		        || Game1.GetFarmTypeKey().Equals("MeadowlandsFarm", StringComparison.OrdinalIgnoreCase)))
+		{
+			if(Game1.GetFarmTypeKey().Equals("Standard", StringComparison.OrdinalIgnoreCase)
+			   || Game1.GetFarmTypeKey().Equals("Beach", StringComparison.OrdinalIgnoreCase)
+			   || Game1.GetFarmTypeKey().Equals("Forest", StringComparison.OrdinalIgnoreCase)
+			   || Game1.GetFarmTypeKey().Equals("FourCorners", StringComparison.OrdinalIgnoreCase)
+			   || Game1.GetFarmTypeKey().Equals("Hilltop", StringComparison.OrdinalIgnoreCase)
+			   || Game1.GetFarmTypeKey().Equals("Wilderness", StringComparison.OrdinalIgnoreCase)
+			   || Game1.GetFarmTypeKey().Equals("MeadowlandsFarm", StringComparison.OrdinalIgnoreCase))
+			return $"Farm_{Game1.GetFarmTypeKey()}";
+			return Game1.GetFarmTypeID();
+		}
 		if (locationName.Equals("BeachNightMarket")) return "Beach";
 		return locationName;
 	}

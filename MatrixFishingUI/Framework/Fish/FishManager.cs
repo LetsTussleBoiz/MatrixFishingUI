@@ -47,8 +47,6 @@ public class FishManager
     public FishInfo GetFish(FishId id)
     {
         return _fish[new FishId(id.Value)];
-        // _fish.TryGetValue(new FishId(id.Value), out var value);
-        // return value;
     }
 
     public Dictionary<FishId, FishInfo> GetAllFish()

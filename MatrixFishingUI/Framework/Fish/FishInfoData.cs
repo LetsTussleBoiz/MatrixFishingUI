@@ -59,7 +59,11 @@ public partial class FishInfoData : INotifyPropertyChanged
                     .Select(group => new SpawningCondition(group.Key, group
                         .SelectMany(x => x.Seasons)
                         .Distinct()
-                        .ToList()))
+                        .ToList(),
+                        group
+                            .SelectMany(x => x.SpecialConditions ?? [])
+                            .Distinct()
+                            .ToList()))
                     .ToList();
             }
             times.AddRange(fish.CatchInfo.Times.Select(timeOfDay => new TimePair(timeOfDay.Start, timeOfDay.End)));
@@ -94,9 +98,18 @@ public partial class FishInfoData : INotifyPropertyChanged
         };
     }
 
-    public void ViewConditions(List<string> conditions)
+    // ReSharper disable once UnusedMember.Global
+    public void ViewConditions(string locationName)
     {
-        var context = SpecialConditionData.GetSpecialConditions(conditions, Fish ?? new FishInfo());
+        List<string>? specialConditions = [];
+        if (LocationSeasonPairs is not null)
+        {
+            foreach (var condition in LocationSeasonPairs.Where(condition => condition.Location.LocationName.Equals(locationName, StringComparison.OrdinalIgnoreCase)))
+            {
+                specialConditions = condition.SpecialConditions;
+            }
+        }
+        var context = SpecialConditionData.GetSpecialConditions(specialConditions, Fish ?? new FishInfo());
         ViewEngine.OpenChildMenu("Mods/Borealis.MatrixFishingUI/Views/SpecialConditions", context);
     }
 

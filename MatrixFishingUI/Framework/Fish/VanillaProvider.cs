@@ -23,13 +23,14 @@ public class VanillaProvider : IFishProvider {
 		new(new FishId("902"), new FishId("775"))
 	];
 
-	public IEnumerable<FishInfo> GetFish() {
-		var data = Game1.content.Load<Dictionary<string, string>>(@"Data\Fish");
+	public IEnumerable<FishInfo> GetFish()
+	{
+		var fishData = DataLoader.Fish(Game1.content);
 		List<FishInfo> result = [];
 		var fishGlossary = FishHelper.GetFishSpawningConditions();
-		var pondData = Game1.content.Load<List<FishPondData>>(@"Data\FishPondData");
+		var pondData = DataLoader.FishPondData(Game1.content);
 
-		foreach (var entry in data)
+		foreach (var entry in fishData)
 		{
 			var fishId = new FishId(entry.Key);
 
