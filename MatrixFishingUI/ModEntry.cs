@@ -12,7 +12,7 @@ namespace MatrixFishingUI
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ModEntry : Mod
     {
-        private static ModConfig _config = null!;
+        public static ModConfig Config = null!;
         private static IMonitor? _monitor;
         public static IViewEngine? ViewEngine;
         public static IEmpApi? EscasApi { get; private set; }
@@ -22,9 +22,9 @@ namespace MatrixFishingUI
         
         public override void Entry(IModHelper helper)
         {
-            _config = helper.ReadConfig<ModConfig>();
+            Config = helper.ReadConfig<ModConfig>();
             _monitor = Monitor;
-            Monitor.Log($"Started with menu key {_config.OpenMenuKey}.");
+            Monitor.Log($"Started with menu key {Config.OpenMenuKey}.");
             Fish = new FishManager();
             I18n.Init(helper.Translation);
             
@@ -53,11 +53,10 @@ namespace MatrixFishingUI
             // register mod
             configMenu.Register(
                 mod: ModManifest,
-                reset: () => _config = new ModConfig(),
-                save: () => Helper.WriteConfig(_config)
+                reset: () => Config = new ModConfig(),
+                save: () => Helper.WriteConfig(Config)
             );
             
-            // Twitch Auth
             configMenu.AddSectionTitle(
                 mod: ModManifest,
                 text: I18n.Gmcm_Title,
@@ -66,18 +65,69 @@ namespace MatrixFishingUI
             configMenu.AddKeybindList(
                 mod: ModManifest,
                 name: I18n.Gmcm_Keybind,
-                getValue: () => _config.OpenMenuKey,
+                getValue: () => Config.OpenMenuKey,
                 setValue: value =>
                 {
-                    _config.OpenMenuKey = value;
+                    Config.OpenMenuKey = value;
                     Log($"Fishipedia Menu Key set to: {value}");
                 }
             );
-            // configMenu.AddParagraph(
-            //     mod: ModManifest,
-            //     text: () => "\n"
-            // );
-
+            configMenu.AddParagraph(
+                mod: ModManifest,
+                text: () => "\n"
+            );
+            configMenu.AddTextOption(
+                mod: ModManifest,
+                name: I18n.Gmcm_HudSize,
+                getValue: () => Config.HudSize,
+                setValue: value => Config.HudSize = value,
+                allowedValues: ["100%", "90%", "80%", "70%"]
+            );
+            configMenu.AddParagraph(
+                mod: ModManifest,
+                text: () => "\n"
+            );
+            configMenu.AddTextOption(
+                mod: ModManifest,
+                name: I18n.Gmcm_Columns,
+                getValue: () => Config.HudColumns,
+                setValue: value => Config.HudColumns = value,
+                allowedValues: ["4", "5", "6"]
+            );
+            configMenu.AddParagraph(
+                mod: ModManifest,
+                text: () => "\n"
+            );
+            configMenu.AddBoolOption(
+                mod: ModManifest,
+                name: I18n.Gmcm_HideCollectedName,
+                tooltip: I18n.Gmcm_HideCollectedTooltip,
+                getValue: () => Config.HideCollected,
+                setValue: value => Config.HideCollected = value
+            );
+            configMenu.AddParagraph(
+                mod: ModManifest,
+                text: () => "\n"
+            );
+            configMenu.AddBoolOption(
+                mod: ModManifest,
+                name: I18n.Gmcm_HideDailyName,
+                tooltip: I18n.Gmcm_HideDailyTooltip,
+                getValue: () => Config.OnlyCatchableToday,
+                setValue: value => Config.OnlyCatchableToday = value
+            );
+            configMenu.AddParagraph(
+                mod: ModManifest,
+                text: () => "\n"
+            );
+            configMenu.AddBoolOption(
+                mod: ModManifest,
+                name: I18n.Gmcm_HideSeasonName,
+                tooltip: I18n.Gmcm_HideSeasonTooltip,
+                getValue: () => Config.OnlyCatchableSeason,
+                setValue: value => Config.OnlyCatchableSeason = value
+            );
+            
             Monitor.Log("GMCM Generated", LogLevel.Debug);
         }
 
@@ -120,7 +170,7 @@ namespace MatrixFishingUI
         private void OnButtonChanged(object? sender, ButtonsChangedEventArgs e)
         {
             // open menu
-            if (!_config.OpenMenuKey.JustPressed()) return;
+            if (!Config.OpenMenuKey.JustPressed()) return;
             if (!Context.IsPlayerFree || Game1.currentMinigame != null)
             {
                 if (Game1.currentMinigame != null)

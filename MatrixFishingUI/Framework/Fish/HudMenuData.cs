@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using MatrixFishingUI.Framework.Enums;
+using PropertyChanged.SourceGenerator;
 using StardewValley;
 
 namespace MatrixFishingUI.Framework.Fish;
@@ -20,6 +21,32 @@ public class HudMenuData() : INotifyPropertyChanged
     // ReSharper disable once MemberCanBePrivate.Global
     public List<LocalFish> LocalUncatchableFish { get; set; } = [];
     public bool IsThereFish { get; set; }
+    [Notify] public string hudSize { get; set; } = GetHudSize();
+    [Notify] public string hudColumns { get; set; } = $"count: {ModEntry.Config.HudColumns}";
+    [Notify] public string frameSize { get; set; } = GetFrameSize();
+
+    private static string GetHudSize()
+    {
+        return ModEntry.Config.HudSize switch
+        {
+            "100%" => "scale: 1.0",
+            "90%" => "scale: 0.9",
+            "80%" => "scale: 0.8",
+            "70%" => "scale: 0.7",
+            _ => "scale: 1.0"
+        };
+    }
+
+    private static string GetFrameSize()
+    {
+        return ModEntry.Config.HudColumns switch
+        {
+            "4" => "302px content",
+            "5" => "372px content",
+            "6" => "442px content",
+            _ => "302px content"
+        };
+    }
 
     //TODO: Optimize this method
     public void UpdateLocalFish(Dictionary<FishId, FishInfo> fishInfos)
@@ -66,13 +93,53 @@ public class HudMenuData() : INotifyPropertyChanged
                 ItemRegistry.GetData(fishInfo.Id));
             if (localFish.Catchable && !FilteredCatchables.ContainsKey(localFish.Name))
             {
-                counter++;
-                FilteredCatchables.Add(localFish.Name, localFish);
+                if (ModEntry.Config.HideCollected && !localFish.HasBeenCaught)
+                {
+                    counter++;
+                    FilteredCatchables.Add(localFish.Name, localFish);
+                } else if (!ModEntry.Config.HideCollected)
+                {
+                    counter++;
+                    FilteredCatchables.Add(localFish.Name, localFish);
+                }
             }
             else if(!FilteredUncatchables.ContainsKey(localFish.Name) && !FilteredCatchables.ContainsKey(localFish.Name))
             {
-                counter++;
-                FilteredUncatchables.Add(localFish.Name, localFish);
+                if (ModEntry.Config.OnlyCatchableToday && localFish is { BadSeason: false, BadLevel: false, BadWeather: false })
+                {
+                    if (ModEntry.Config.HideCollected && !localFish.HasBeenCaught)
+                    {
+                        counter++;
+                        FilteredUncatchables.Add(localFish.Name, localFish);
+                    } else if (!ModEntry.Config.HideCollected)
+                    {
+                        counter++;
+                        FilteredUncatchables.Add(localFish.Name, localFish);
+                    }
+                } else if (!ModEntry.Config.OnlyCatchableToday && ModEntry.Config.OnlyCatchableSeason && localFish is { BadSeason: false})
+                {
+                    if (ModEntry.Config.HideCollected && !localFish.HasBeenCaught)
+                    {
+                        counter++;
+                        FilteredUncatchables.Add(localFish.Name, localFish);
+                    } else if (!ModEntry.Config.HideCollected)
+                    {
+                        counter++;
+                        FilteredUncatchables.Add(localFish.Name, localFish);
+                    }
+                }
+                else if(!ModEntry.Config.OnlyCatchableSeason && !ModEntry.Config.OnlyCatchableToday)
+                {
+                    if (ModEntry.Config.HideCollected && !localFish.HasBeenCaught)
+                    {
+                        counter++;
+                        FilteredUncatchables.Add(localFish.Name, localFish);
+                    } else if (!ModEntry.Config.HideCollected)
+                    {
+                        counter++;
+                        FilteredUncatchables.Add(localFish.Name, localFish);
+                    }
+                }
             }
         }
         return counter;
