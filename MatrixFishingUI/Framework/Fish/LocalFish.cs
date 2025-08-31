@@ -2,7 +2,7 @@
 
 namespace MatrixFishingUI.Framework.Fish;
 
-public class LocalFish (bool catchable, bool badSeason, bool badTime, bool badWeather, bool badLevel,bool hasBeenCaught,FishInfo fishInfo, ParsedItemData parsedFish)
+public class LocalFish (bool catchable, bool badSeason, bool badTime, bool badWeather, bool badLevel, bool hasBeenCaught, bool conditionsUnmet, FishInfo fishInfo, ParsedItemData parsedFish)
 {
     public string Name { get; set; } = fishInfo.Name;
     public bool Catchable { get; set; } = catchable;
@@ -10,6 +10,7 @@ public class LocalFish (bool catchable, bool badSeason, bool badTime, bool badWe
     public bool BadTime { get; set; } = badTime;
     public bool BadWeather { get; set; } = badWeather;
     public bool BadLevel { get; set; } = badLevel;
+    public bool ConditionsUnmet { get; set; } = conditionsUnmet;
     public bool HasBeenCaught { get; set; } = hasBeenCaught;
     public FishInfo FishInfo { get; set; } = fishInfo;
     public ParsedItemData ParsedFish { get; set; } = parsedFish;

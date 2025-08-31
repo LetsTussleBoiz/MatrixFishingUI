@@ -14,6 +14,12 @@ namespace MatrixFishingUI.Framework.Fish;
 public static class FishHelper
 {
     private static HashSet<string>? FarmLocalTypes { get; set; }
+    private static Dictionary<string, LocationData> Locations = GetLocations()!;
+
+    public static void DailyRefresh()
+    {
+        Locations = GetLocations()!;
+    }
 
     public static Dictionary<FishId, List<SpawningCondition>> GetFishSpawningConditions()
     {
@@ -121,6 +127,7 @@ public static class FishHelper
         
         foreach (var fish in locationData.Fish)
         {
+            
             List<string>? specialConditions = null;
             if (fish.Condition is not null 
                 && ((!fish.Condition.Contains("LOCATION_SEASON", StringComparison.OrdinalIgnoreCase) && !fish.Condition.Contains("SEASON", StringComparison.OrdinalIgnoreCase)) 
@@ -136,8 +143,8 @@ public static class FishHelper
             }
 
             var conditionHasSeason = fish.Condition is not null &&
-                (fish.Condition.Contains("LOCATION_SEASON", StringComparison.OrdinalIgnoreCase) ||
-                 fish.Condition.Contains("SEASON", StringComparison.OrdinalIgnoreCase) && !fish.Condition.Contains("SEASON_DAY", StringComparison.OrdinalIgnoreCase));
+                                     (fish.Condition.Contains("LOCATION_SEASON", StringComparison.OrdinalIgnoreCase) ||
+                                      fish.Condition.Contains("SEASON", StringComparison.OrdinalIgnoreCase) && !fish.Condition.Contains("SEASON_DAY", StringComparison.OrdinalIgnoreCase));
 
             if (!conditionHasSeason)
             {
@@ -158,21 +165,45 @@ public static class FishHelper
 
         void AddSpawningCondition(HashSet<Season> seasons, SpawnFishData fish, List<string>? specialConditions = null)
         {
-            var metadata = ItemRegistry.GetMetadata(fish.ItemId);
-            if (metadata is null) return;
-            var id = new FishId(metadata.LocalItemId);
-            if (!result.TryGetValue(id, out var spawningConditions))
+            if (fish.RandomItemId is not null && fish.RandomItemId.Count <= 0)
             {
-                spawningConditions = [];
-                result[id] = spawningConditions;
-            }
+                foreach (var fishId in fish.RandomItemId)
+                {
+                    var metadata = ItemRegistry.GetMetadata(fishId);
+                    if (metadata is null) continue;
+                    var id = new FishId(metadata.LocalItemId);
+                    if (!result.TryGetValue(id, out var spawningConditions))
+                    {
+                        spawningConditions = [];
+                        result[id] = spawningConditions;
+                    }
 
-            var locationArea = new LocationArea(locationName, fish.FishAreaId, locationName);
-            if (locationArea.TryGetGameLocation(out var location))
-            {
-                locationArea = locationArea with { LocationReadableName = location.DisplayName };
+                    var locationArea = new LocationArea(locationName, fish.FishAreaId, locationName);
+                    if (locationArea.TryGetGameLocation(out var location))
+                    {
+                        locationArea = locationArea with { LocationReadableName = location.DisplayName };
+                    }
+                    spawningConditions.Add(new SpawningCondition(locationArea, seasons.ToList(), specialConditions));
+                }
             }
-            spawningConditions.Add(new SpawningCondition(locationArea, seasons.ToList(), specialConditions));
+            else
+            {
+                var metadata = ItemRegistry.GetMetadata(fish.ItemId);
+                if (metadata is null) return;
+                var id = new FishId(metadata.LocalItemId);
+                if (!result.TryGetValue(id, out var spawningConditions))
+                {
+                    spawningConditions = [];
+                    result[id] = spawningConditions;
+                }
+
+                var locationArea = new LocationArea(locationName, fish.FishAreaId, locationName);
+                if (locationArea.TryGetGameLocation(out var location))
+                {
+                    locationArea = locationArea with { LocationReadableName = location.DisplayName };
+                }
+                spawningConditions.Add(new SpawningCondition(locationArea, seasons.ToList(), specialConditions));
+            }
         }
     }
 
@@ -287,4 +318,16 @@ public readonly struct FishId : IEquatable<FishId>
 public record SpawningCondition(LocationArea Location, List<Season> Seasons, List<string>? SpecialConditions = null)
 {
     public bool HasSpecialConditions => SpecialConditions is not null && SpecialConditions.Count > 0;
+    
+    public static bool VerifyCondition(string condition, Item? targetItem, Item? inputItem)
+    {
+        var player = Game1.player;
+        return GameStateQuery.CheckConditions(
+            queryString: condition,
+            player: player,
+            location: player.currentLocation,
+            targetItem: targetItem??null,
+            inputItem: inputItem??null
+        );
+    }
 };

@@ -56,6 +56,7 @@
                                         <image *if={:BadSeason} layout="18px 18px" sprite={@Mods/Borealis.MatrixFishingUI/Sprites/emojis:Season} />
                                         <image *if={:BadWeather} layout="18px 18px" sprite={@Mods/Borealis.MatrixFishingUI/Sprites/emojis:Umbrella} />
                                         <image *if={:BadLevel} layout="18px 18px" sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Level} />
+                                        <image *if={:ConditionsUnmet} layout="18px 18px" sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Exclamation} />
                                     </lane>
                                 </panel>
                             </lane>

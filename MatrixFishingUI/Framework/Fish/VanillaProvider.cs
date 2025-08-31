@@ -23,30 +23,29 @@ public class VanillaProvider : IFishProvider {
 		new(new FishId("902"), new FishId("775"))
 	];
 
+	private static Dictionary<string, string> FishData = DataLoader.Fish(Game1.content);
+	private static List<FishPondData> PondData = DataLoader.FishPondData(Game1.content);
+
+	public void DailyRefresh()
+	{
+		FishData = DataLoader.Fish(Game1.content);
+		PondData = DataLoader.FishPondData(Game1.content);
+	}
+	
 	public IEnumerable<FishInfo> GetFish()
 	{
-		var fishData = DataLoader.Fish(Game1.content);
 		List<FishInfo> result = [];
 		var fishGlossary = FishHelper.GetFishSpawningConditions();
-		var pondData = DataLoader.FishPondData(Game1.content);
-
-		foreach (var entry in fishData)
+		
+		foreach (var entry in FishData)
 		{
 			var fishId = new FishId(entry.Key);
 
 			fishGlossary.TryGetValue(fishId, out var fishLocations);
 			try
 			{
-				if (FishHelper.SkipFish(Game1.player, fishId))
-				{
-					foreach (var pair in LegendaryPairs)
-					{
-						if (!pair.Key.Value.Equals(entry.Key, StringComparison.OrdinalIgnoreCase)) continue;
-						fishGlossary.TryGetValue(pair.Value, out fishLocations);
-						break;
-					}
-				}
-				var info = GetFishInfo(fishId, entry.Value, fishLocations ?? [], pondData);
+				
+				var info = GetFishInfo(fishId, entry.Value, fishLocations ?? [], PondData);
 				if (info is not null) result.Add(info);
 			} catch(Exception e) {
 				ModEntry.LogWarn($"Unable to process fish: {entry.Key}");

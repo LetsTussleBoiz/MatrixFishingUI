@@ -37,6 +37,7 @@ namespace MatrixFishingUI
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.Player.Warped += OnLocationChanged;
             helper.Events.Player.InventoryChanged += OnInventoryChanged;
+            helper.Events.GameLoop.DayStarted += OnDayStarted;
         }
         
         private void Display_RenderedHud(object? sender, RenderedHudEventArgs e)
@@ -223,6 +224,12 @@ namespace MatrixFishingUI
                 _canShowHud = false;
                 ToggleHud();
             }
+        }
+
+        private void OnDayStarted(object? sender, DayStartedEventArgs e)
+        {
+            //TODO: Brain not work good, could only think of this
+            ((VanillaProvider)Fish._providers[0]).DailyRefresh();
         }
 
         /// <summary>Raised after a game menu is opened, closed, or replaced.</summary>

@@ -60,7 +60,16 @@ public class HudMenuData() : INotifyPropertyChanged
         var fishByArea = FishHelper.GetFishByArea(Game1.player.currentLocation);
         if (fishByArea is null) return;
         IsThereFish = true;
-        var currentWeather = Game1.currentLocation.GetWeather().Weather;
+        var currentWeather = Game1.currentLocation.GetWeather().Weather switch
+        {
+            "Sun" => "Sunny",
+            "Rain" => "Rain",
+            "GreenRain" => "GreenRain",
+            "Storm" => "Rain",
+            "Wind" => "Sunny",
+            "Snow" => "Sunny",
+            _ => Game1.currentLocation.GetWeather().Weather
+        };
         var currentSeasonNumber = Game1.currentLocation.GetSeasonIndex();
         var currentTime = Game1.timeOfDay;
         var counter = 0;
@@ -89,6 +98,7 @@ public class HudMenuData() : INotifyPropertyChanged
                 qualifications.Contains(IsFishCatchable.Weather),
                 qualifications.Contains(IsFishCatchable.Level),
                 fishInfo.GetCaughtStatus(Game1.player) is CaughtStatus.Caught,
+                qualifications.Contains(IsFishCatchable.Condition),
                 fishInfo,
                 ItemRegistry.GetData(fishInfo.Id));
             if (localFish.Catchable && !FilteredCatchables.ContainsKey(localFish.Name))
@@ -162,6 +172,7 @@ public class HudMenuData() : INotifyPropertyChanged
         var requiredWeather = fish.CatchInfo.Weather;
         var locations = fish.CatchInfo.Locations;
         var requiredSeasons = new HashSet<LuluSeason>();
+        var isSpecialConditionsMet = true;
         if (locations is not null)
         {
             foreach (var spawningCondition in locations)
@@ -179,6 +190,15 @@ public class HudMenuData() : INotifyPropertyChanged
                         Season.Winter => LuluSeason.Winter,
                         _ => LuluSeason.All
                     });
+                }
+
+                if (spawningCondition.HasSpecialConditions && spawningCondition.SpecialConditions is not null)
+                {
+                    foreach (var condition in spawningCondition.SpecialConditions)
+                    {
+                        if (SpawningCondition.VerifyCondition(condition, null, null)) continue;
+                        isSpecialConditionsMet = false;
+                    }
                 }
             }
         }
@@ -217,6 +237,10 @@ public class HudMenuData() : INotifyPropertyChanged
         {
             list.Add(IsFishCatchable.Season);
         }
+        if (!isSpecialConditionsMet)
+        {
+            list.Add(IsFishCatchable.Condition);
+        }
         if (list.Count == 0)
         {
             list.Add(IsFishCatchable.Yes);
@@ -250,5 +274,6 @@ public enum IsFishCatchable
     Time = 0,
     Season = 1,
     Weather = 2,
-    Level = 3
+    Level = 3,
+    Condition = 4
 }

@@ -2,13 +2,18 @@
 
 public class FishManager
 {
-    private readonly List<IFishProvider> _providers = new();
+    public readonly List<IFishProvider> _providers = new();
     private Dictionary<FishId,FishInfo> _fish = new();
     private bool _loaded;
     
     public FishManager()
     {
         _providers.Add(new VanillaProvider());
+    }
+
+    public void ReadFromFile()
+    {
+        
     }
     
     // TODO: Find alternative for refreshing fish without changing the entire dictionary (Like CatchFish mb?)
