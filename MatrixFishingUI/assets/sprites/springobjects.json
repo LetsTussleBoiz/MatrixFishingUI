@@ -1,0 +1,8 @@
+{
+  "Texture": "Maps/springobjects",
+  "Sprites": {
+    "WhiteRoe": {
+      "SourceRect": "336, 528, 16, 16"
+    }
+  }
+}

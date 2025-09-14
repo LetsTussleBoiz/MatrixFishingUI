@@ -222,7 +222,7 @@
                                                 <panel layout="96px 96px" horizontal-content-alignment="end" vertical-content-alignment="end">
                                                     <image layout="96px"
                                                         margin="0, 0, 0, 4"
-                                                        sprite={@Mods/Borealis.MatrixFishingUI/Sprites/Objects_2:WhiteRoe}
+                                                        sprite={:Item}
                                                         tooltip={:Item} />
                                                     <lane orientation="horizontal" horizontal-content-alignment="middle">
                                                         <label bold="true" text={:QuantityString} color="#FFFFFF" font="small" shadow-alpha="0.8" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>
@@ -237,7 +237,7 @@
                                                 <panel layout="96px 96px" horizontal-content-alignment="end" vertical-content-alignment="end">
                                                     <image layout="96px"
                                                         margin="0, 0, 0, 4"
-                                                        sprite={:Item}
+                                                        sprite={@Mods/Borealis.MatrixFishingUI/Sprites/springobjects:WhiteRoe}
                                                         tooltip={:FlavoredRoe}
                                                         tint={:RoeColor} />
                                                     <lane orientation="horizontal" horizontal-content-alignment="middle">
