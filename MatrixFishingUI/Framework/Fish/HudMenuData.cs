@@ -10,6 +10,7 @@ public class HudMenuData() : INotifyPropertyChanged
 {
     // ReSharper disable once MemberCanBePrivate.Global
     public Dictionary<FishId,FishInfo> FishInfos { get; set; } = [];
+    public Dictionary<FishId,FishState> FishStates { get; set; } = [];
     // ReSharper disable once UnusedMember.Global
     public string Title { get; set; } = I18n.Ui_Hud_Title();
     // ReSharper disable once MemberCanBePrivate.Global
@@ -49,15 +50,16 @@ public class HudMenuData() : INotifyPropertyChanged
     }
 
     //TODO: Optimize this method
-    public void UpdateLocalFish(Dictionary<FishId, FishInfo> fishInfos)
+    public void UpdateLocalFish(Dictionary<FishId, FishInfo> fishInfos, Dictionary<FishId, FishState> fishStates)
     {
         FishInfos = fishInfos;
+        FishStates = fishStates;
         IsThereFish = false;
         FilteredCatchables.Clear();
         FilteredUncatchables.Clear();
         LocalCatchableFish.Clear();
         LocalUncatchableFish.Clear();
-        var fishByArea = FishHelper.GetFishByArea(Game1.player.currentLocation);
+        var fishByArea = FishHelper.GetFishByArea(Game1.currentLocation);
         if (fishByArea is null) return;
         IsThereFish = true;
         var currentWeather = Game1.currentLocation.GetWeather().Weather switch
@@ -89,7 +91,8 @@ public class HudMenuData() : INotifyPropertyChanged
         foreach (var fish in fishList)
         {
             FishInfos.TryGetValue(fish, out var fishInfo);
-            if (fishInfo is null) continue;
+            FishStates.TryGetValue(fish, out var fishState);
+            if (fishInfo is null || fishState is null) continue;
             var qualifications = QualifyFish(fishInfo, currentWeather, currentSeasonNumber, currentTime);
             var localFish = new LocalFish(
                 qualifications.Contains(IsFishCatchable.Yes),
@@ -97,7 +100,7 @@ public class HudMenuData() : INotifyPropertyChanged
                 qualifications.Contains(IsFishCatchable.Time),
                 qualifications.Contains(IsFishCatchable.Weather),
                 qualifications.Contains(IsFishCatchable.Level),
-                fishInfo.GetCaughtStatus(Game1.player) is CaughtStatus.Caught,
+                fishState.GetCaughtStatus(Game1.player) is CaughtStatus.Caught,
                 qualifications.Contains(IsFishCatchable.Condition),
                 fishInfo,
                 ItemRegistry.GetData(fishInfo.Id));

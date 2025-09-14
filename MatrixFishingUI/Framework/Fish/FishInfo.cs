@@ -14,10 +14,7 @@ public enum FishType {
 	Catch
 }
 
-public enum CaughtStatus {
-	Uncaught,
-	Caught
-}
+
 
 public record FishInfo{
 	// Deduplication
@@ -34,26 +31,6 @@ public record FishInfo{
 	public TrapFishInfo? TrapInfo { get; set; }
 	public CatchFishInfo? CatchInfo { get; set; }
 	public PondInfo? PondInfo { get; set; }
-	
-	public CaughtStatus GetCaughtStatus(Farmer player)
-	{
-		if (!player.fishCaught.TryGetValue(ItemRegistry.QualifyItemId(Id), out var value)) return CaughtStatus.Uncaught;
-		if (value.Length <= 0) return CaughtStatus.Uncaught;
-		return value[0] > 0 ? CaughtStatus.Caught : CaughtStatus.Uncaught;
-	}
-
-	public int GetNumberCaught(Farmer player)
-	{
-		if (!player.fishCaught.TryGetValue(Id, out var value)) return 0;
-		if (value.Length <= 0) return 0;
-		return value[0];
-	}
-	public int GetBiggestCatch(Farmer player)
-	{
-		if (!player.fishCaught.TryGetValue(Id, out var value)) return 0;
-		if (value.Length <= 0) return 0;
-		return value[1];
-	}
 }
 
 public record TrapFishInfo

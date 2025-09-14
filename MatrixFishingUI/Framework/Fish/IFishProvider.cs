@@ -9,5 +9,7 @@ public interface IFishProvider {
 	int Priority { get; }
 
 	IEnumerable<FishInfo>? GetFish();
+	
+	IEnumerable<FishState>? GetFishState();
 
 }

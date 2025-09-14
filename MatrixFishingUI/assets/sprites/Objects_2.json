@@ -1,0 +1,8 @@
+{
+  "Texture": "TileSheets/Objects_2",
+  "Sprites": {
+    "WhiteRoe": {
+      "SourceRect": "32, 112, 16, 16"
+    }
+  }
+}

@@ -10,18 +10,6 @@ public class VanillaProvider : IFishProvider {
 
 	public string Name => nameof(VanillaProvider);
 	public int Priority => 0;
-	private static readonly KeyValuePair<FishId, FishId>[] LegendaryPairs = [
-		// Son of Crimsonfish
-		new(new FishId("898"), new FishId("159")),
-		// Ms. Angler
-		new(new FishId("899"), new FishId("160")),
-		// The Legend II
-		new(new FishId("900"), new FishId("163")),
-		// Radioactive Carp
-		new(new FishId("901"), new FishId("682")),
-		// Glacierfish Jr.
-		new(new FishId("902"), new FishId("775"))
-	];
 
 	private static Dictionary<string, string> FishData = DataLoader.Fish(Game1.content);
 	private static List<FishPondData> PondData = DataLoader.FishPondData(Game1.content);
@@ -44,13 +32,29 @@ public class VanillaProvider : IFishProvider {
 			fishGlossary.TryGetValue(fishId, out var fishLocations);
 			try
 			{
-				
 				var info = GetFishInfo(fishId, entry.Value, fishLocations ?? [], PondData);
 				if (info is not null) result.Add(info);
 			} catch(Exception e) {
 				ModEntry.LogWarn($"Unable to process fish: {entry.Key}");
 				ModEntry.LogError(e.ToString());
 			}
+		}
+		return result;
+	}
+
+	public IEnumerable<FishState> GetFishState()
+	{
+		List<FishState> result = [];
+
+		foreach (var entry in FishData)
+		{
+			var fishId = new FishId(entry.Key);
+
+			if (string.IsNullOrEmpty(fishId.Value)) continue;
+			var toReturn = new FishState();
+			toReturn.Id = fishId;
+			toReturn.Item = new SObject(fishId.Value, 1);
+			result.Add(toReturn);
 		}
 		return result;
 	}

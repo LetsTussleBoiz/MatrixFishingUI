@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using PropertyChanged.SourceGenerator;
 using StardewValley;
@@ -9,6 +10,7 @@ namespace MatrixFishingUI.Framework.Fish;
 public partial class FishInfoData : INotifyPropertyChanged
 {
     public FishInfo? Fish { get; set; }
+    public FishState? FishState { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; } = string.Empty;
     public ParsedItemData? ParsedFish { get; set; }
@@ -33,6 +35,8 @@ public partial class FishInfoData : INotifyPropertyChanged
     public CaughtStatus CaughtStatus { get; set; }
     public int NumberCaught { get; set; }
     public int BiggestCatch { get; set; }
+    public string? DifficultyType { get; set; }
+    public int Difficulty { get; set; }
     [Notify] private FishInfo? previous;
     [Notify] private FishInfo? current;
     [Notify] private FishInfo? next;
@@ -44,7 +48,7 @@ public partial class FishInfoData : INotifyPropertyChanged
                 new FishInfoTabViewModel(tab, tab == FishInfoTab.General))
             .ToArray();
     
-    public static FishInfoData GetSingleFish(FishInfo fish, FishInfo prevFish, FishInfo nextFish, int index)
+    public static FishInfoData GetSingleFish(FishInfo fish, FishInfo prevFish, FishInfo nextFish, int index, FishState fishState)
     {
         var times = new List<TimePair>();
         var newLocations = new List<SpawningCondition>();
@@ -70,6 +74,7 @@ public partial class FishInfoData : INotifyPropertyChanged
         return new FishInfoData
         {
             Fish = fish,
+            FishState = fishState,
             Name = fish.Name,
             Description = fish.Description,
             ParsedFish = fish.FishData,
@@ -87,9 +92,11 @@ public partial class FishInfoData : INotifyPropertyChanged
             SpecialInfo = fish.SpecialInfo,
             SpawnTimeString = $"{I18n.Ui_Fishipedia_Spawntime_One()}{fish.PondInfo?.SpawnTime} {I18n.Ui_Fishipedia_Spawntime_Two()}",
             PondItems = PondItemData.GetPondItems(fish.PondInfo, fish.Item ?? new SObject(fish.Id, 1)),
-            CaughtStatus = fish.GetCaughtStatus(Game1.player),
-            NumberCaught = fish.GetNumberCaught(Game1.player),
-            BiggestCatch = fish.GetBiggestCatch(Game1.player),
+            CaughtStatus = fishState.GetCaughtStatus(Game1.player),
+            NumberCaught = fishState.GetNumberCaught(Game1.player),
+            BiggestCatch = fishState.GetBiggestCatch(Game1.player),
+            Difficulty = fish.CatchInfo?.Difficulty ?? 0,
+            DifficultyType = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fish.CatchInfo?.DifficultyType ?? string.Empty),
             Previous = prevFish,
             Current = fish,
             Next = nextFish,
@@ -119,7 +126,7 @@ public partial class FishInfoData : INotifyPropertyChanged
         var fishCatalogue = FishMenuData.GetFish().Fish;
         var localIndex = Index == 0 ? fishCatalogue.Count - 1 : Index - 1;
         var prevFish = ModEntry.Fish.GetFish(localIndex == 0 ? new FishId(fishCatalogue[^1].Id) : new FishId(FishMenuData.GetFish().Fish[localIndex-1].Id));
-        var context = GetSingleFish(Previous, prevFish, Current, localIndex);
+        var context = GetSingleFish(Previous, prevFish, Current, localIndex, ModEntry.Fish.GetFishState(new FishId(Previous.Id)));
         ViewEngine.ChangeChildMenu("Mods/Borealis.MatrixFishingUI/Views/FishInformation", context);
     }
 
@@ -130,7 +137,7 @@ public partial class FishInfoData : INotifyPropertyChanged
         var fishCatalogue = FishMenuData.GetFish().Fish;
         var localIndex = Index == fishCatalogue.Count - 1 ? 0 : Index + 1;
         var nextFish = ModEntry.Fish.GetFish(localIndex == fishCatalogue.Count - 1 ? new FishId(fishCatalogue[0].Id) : new FishId(FishMenuData.GetFish().Fish[localIndex+1].Id));
-        var context = GetSingleFish(Next, Current, nextFish, localIndex);
+        var context = GetSingleFish(Next, Current, nextFish, localIndex, ModEntry.Fish.GetFishState(new FishId(Next.Id)));
         ViewEngine.ChangeChildMenu("Mods/Borealis.MatrixFishingUI/Views/FishInformation", context);
     }
     

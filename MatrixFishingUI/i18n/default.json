@@ -49,6 +49,7 @@
   "ui.fishipedia.labels.every_season": "Every Season",
   "ui.fishipedia.labels.weather_required": "Weather Required: ",
   "ui.fishipedia.labels.seasons": "Season(s) Available: ",
+  "ui.fishipedia.labels.difficulty": "Catch Difficulty: ",
   
   "ui.special.title": "Special Condition(s)",
   "ui.special.segment": "Condition: ",

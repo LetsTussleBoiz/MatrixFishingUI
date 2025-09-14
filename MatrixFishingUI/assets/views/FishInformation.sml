@@ -122,6 +122,12 @@
                                 <label margin="0, 8" color="#136" text={:BiggestCatch} />
                             </lane>
                             <lane orientation="horizontal" horizontal-content-alignment="middle">
+                                <label bold="true" margin="0, 8" color="#136" text={#ui.fishipedia.labels.difficulty} />
+                                <label margin="0, 8" color="#136" text={:Difficulty} />
+                                <spacer layout="4px content" />
+                                <label margin="0, 8" color="#136" text={:DifficultyType} />
+                            </lane>
+                            <lane orientation="horizontal" horizontal-content-alignment="middle">
                                 <label bold="true" margin="0, 8" color="#136" text={#ui.fishipedia.labels.weather_required} />
                                 <lane *switch={:FishWeather} orientation="vertical">
                                     <image *case="Sunny"
@@ -216,7 +222,7 @@
                                                 <panel layout="96px 96px" horizontal-content-alignment="end" vertical-content-alignment="end">
                                                     <image layout="96px"
                                                         margin="0, 0, 0, 4"
-                                                        sprite={:Item}
+                                                        sprite={@Mods/Borealis.MatrixFishingUI/Sprites/Objects_2:WhiteRoe}
                                                         tooltip={:Item} />
                                                     <lane orientation="horizontal" horizontal-content-alignment="middle">
                                                         <label bold="true" text={:QuantityString} color="#FFFFFF" font="small" shadow-alpha="0.8" shadow-layers="VerticalAndDiagonal" shadow-offset="-3, 3"/>

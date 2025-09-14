@@ -165,7 +165,7 @@ namespace MatrixFishingUI
         private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
         {
             FishHelper.InvalidateCache();
-            Fish.RefreshFish();
+            Fish.ReadFromFile();
         }
         
         private void OnButtonChanged(object? sender, ButtonsChangedEventArgs e)
@@ -195,6 +195,10 @@ namespace MatrixFishingUI
         
         private void ToggleHud()
         {
+            Log($"Current Location DisplayName: {Game1.currentLocation.DisplayName}");
+            Log($"Current Location ContextID: {Game1.currentLocation.locationContextId}");
+            Log($"Current Location NameOrUniqueName: {Game1.currentLocation.NameOrUniqueName}");
+            Log($"Current Location NameOrUniqueName: {Game1.currentLocation}");
             if (_hudWidget is not null)
             {
                 _hudWidget.Dispose();
@@ -205,7 +209,7 @@ namespace MatrixFishingUI
                 _hudWidget = ViewEngine?.CreateDrawableFromAsset("Mods/Borealis.MatrixFishingUI/Views/Hud");
                 if (_hudWidget is null) return;
                 var data = new HudMenuData();
-                data.UpdateLocalFish(Fish.GetAllFish());
+                data.UpdateLocalFish(Fish.GetAllFish(), Fish.GetAllFishStates());
                 _hudWidget.Context = data;
             }
         }
@@ -230,6 +234,7 @@ namespace MatrixFishingUI
         {
             //TODO: Brain not work good, could only think of this
             ((VanillaProvider)Fish._providers[0]).DailyRefresh();
+            Fish.ReadFromFile();
         }
 
         /// <summary>Raised after a game menu is opened, closed, or replaced.</summary>

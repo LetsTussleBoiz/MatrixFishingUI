@@ -79,7 +79,27 @@ public static class FishHelper
     {
         var locations = DataLoader.Locations(Game1.content);
         GameLocation? farm = null;
+        GameLocation? floor20 = null;
+        LocationData? floor20Data = null;
+        GameLocation? floor60 = null;
+        GameLocation? floor100 = null;
         LocationData? farmData = null;
+        
+        try
+        {
+            floor20 = Game1.RequireLocation("UndergroundMine20");
+            floor20Data = floor20.GetData();
+            if (floor20Data is null)
+            {
+                ModEntry.LogWarn("Cannot find locationData for Mine Floor 20.");
+            }
+        }
+        catch (Exception e)
+        {
+            ModEntry.LogError($"Exception thrown when attempting to find Mine Floor data: {e}");
+        }
+        
+        
         
         try
         {
@@ -161,6 +181,29 @@ public static class FishHelper
             }
         }
 
+        // Ice Pip, Lava Eel, and Stonefish Hard-coded handling
+        switch (Game1.currentLocation.NameOrUniqueName)
+        {
+            case "UndergroundMine20":
+            {
+                List<string>? specialConditions = null;
+                AddManualSpawningCondition(allSeasons, new FishId("158"), specialConditions);
+                break;
+            }
+            case "UndergroundMine60":
+            {
+                List<string>? specialConditions = null;
+                AddManualSpawningCondition(allSeasons, new FishId("161"), specialConditions);
+                break;
+            }
+            case "UndergroundMine100":
+            {
+                List<string>? specialConditions = null;
+                AddManualSpawningCondition(allSeasons, new FishId("162"), specialConditions);
+                break;
+            }
+        }
+
         return result;
 
         void AddSpawningCondition(HashSet<Season> seasons, SpawnFishData fish, List<string>? specialConditions = null)
@@ -191,7 +234,7 @@ public static class FishHelper
                 var metadata = ItemRegistry.GetMetadata(fish.ItemId);
                 if (metadata is null) return;
                 var id = new FishId(metadata.LocalItemId);
-                if (!result.TryGetValue(id, out var spawningConditions))
+                if (!result.TryGetValue(id, out var spawningConditions) || specialConditions is not null)
                 {
                     spawningConditions = [];
                     result[id] = spawningConditions;
@@ -204,6 +247,25 @@ public static class FishHelper
                 }
                 spawningConditions.Add(new SpawningCondition(locationArea, seasons.ToList(), specialConditions));
             }
+        }
+
+        void AddManualSpawningCondition(HashSet<Season> seasons, FishId fish, List<string>? specialConditions = null)
+        {
+            var metadata = ItemRegistry.GetMetadata(fish.Value);
+            if (metadata is null) return;
+            var id = new FishId(metadata.LocalItemId);
+            if (!result.TryGetValue(id, out var spawningConditions) || specialConditions is not null)
+            {
+                spawningConditions = [];
+                result[id] = spawningConditions;
+            }
+
+            var locationArea = new LocationArea(locationName, "", locationName);
+            if (locationArea.TryGetGameLocation(out var location))
+            {
+                locationArea = locationArea with { LocationReadableName = location.DisplayName };
+            }
+            spawningConditions.Add(new SpawningCondition(locationArea, seasons.ToList(), specialConditions));
         }
     }
 
@@ -269,8 +331,22 @@ public static class FishHelper
     public static Dictionary<LocationArea, FishId[]>? GetFishByArea(GameLocation location)
     {
         var locations = GetLocations()!;
-        
         var locationName = LocationArea.ConvertLocationNameToDataName(location);
+        
+        if (location.NameOrUniqueName.Equals("UndergroundMine20") ||
+            location.NameOrUniqueName.Equals("UndergroundMine60") ||
+            location.NameOrUniqueName.Equals("UndergroundMine100"))
+        {
+            try
+            {
+                locationName = LocationArea.ConvertLocationNameToDataName(Game1.RequireLocation(location.NameOrUniqueName));
+            }
+            catch (Exception e)
+            {
+                ModEntry.LogError($"Error caught during UndergroundMine handling: {e}");
+            }
+        }
+        
         if (!locations.TryGetValue(locationName, out var locationData)) return null;
         var fishSpawningConditions = GetFishSpawningConditions(locationData, locations["Default"], locationName);
 
