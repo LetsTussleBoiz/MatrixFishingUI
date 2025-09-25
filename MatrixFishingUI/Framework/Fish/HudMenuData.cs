@@ -48,8 +48,7 @@ public class HudMenuData() : INotifyPropertyChanged
             _ => "302px content"
         };
     }
-
-    //TODO: Optimize this method
+    
     public void UpdateLocalFish(Dictionary<FishId, FishInfo> fishInfos, Dictionary<FishId, FishState> fishStates)
     {
         FishInfos = fishInfos;
@@ -85,9 +84,28 @@ public class HudMenuData() : INotifyPropertyChanged
         ModEntry.LogDebug($"Out of {counter} local fish, {LocalCatchableFish.Count} are catchable and {LocalUncatchableFish.Count} are uncatchable.");
     }
 
-    private int TryAddFish(FishId[] fishList, string currentWeather, int currentSeasonNumber, int currentTime)
+    private int TryAddFish(List<FishId> fishList, string currentWeather, int currentSeasonNumber, int currentTime)
     {
         var counter = 0;
+        // Ice Pip, Lava Eel, and Stonefish Hard-coded handling
+        switch (Game1.currentLocation.NameOrUniqueName)
+        {
+            case "UndergroundMine20":
+            {
+                fishList.Add(new FishId("158"));
+                break;
+            }
+            case "UndergroundMine60":
+            {
+                fishList.Add(new FishId("161"));
+                break;
+            }
+            case "UndergroundMine100":
+            {
+                fishList.Add(new FishId("162"));
+                break;
+            }
+        }
         foreach (var fish in fishList)
         {
             FishInfos.TryGetValue(fish, out var fishInfo);
@@ -180,8 +198,7 @@ public class HudMenuData() : INotifyPropertyChanged
         {
             foreach (var spawningCondition in locations)
             {
-                if (!spawningCondition.Location.TryGetGameLocation(out var location)) continue;
-                if (!location.Equals(Game1.currentLocation)) continue;
+                if (InCurrentLocation(spawningCondition) is false) continue;
                 var seasons = spawningCondition.Seasons;
                 foreach (var season in seasons)
                 {
@@ -249,6 +266,15 @@ public class HudMenuData() : INotifyPropertyChanged
             list.Add(IsFishCatchable.Yes);
         }
         return list;
+    }
+
+    private static bool InCurrentLocation(SpawningCondition spawningCondition)
+    {
+        if (Game1.currentLocation.NameOrUniqueName.StartsWith("UndergroundMine") 
+            && spawningCondition.Location.LocationName.StartsWith("UndergroundMine")) return true;
+        if (!spawningCondition.Location.TryGetGameLocation(out var location)) return false;
+        if (!location.Equals(Game1.currentLocation)) return false;
+        return true;
     }
 
     #region PropertyChanges

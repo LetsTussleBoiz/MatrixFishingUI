@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using MatrixFishingUI.Framework.Models;
 using StardewValley;
 using StardewValley.GameData.FishPonds;
 
@@ -121,6 +122,41 @@ public class VanillaProvider : IFishProvider {
 					{
 						Locations = spawningConditions
 					};
+					var allSeasons = Enum.GetValues<Season>().ToHashSet();
+					// Manual Cave Fish Handling
+					switch (id.Value)
+					{
+						case "158":
+						{
+							// UndergroundMine20
+							var floor20 = Game1.RequireLocation("UndergroundMine20");
+							fishInfo.CatchInfo.Locations
+								.Add(new SpawningCondition(
+									new LocationArea(floor20.NameOrUniqueName,"UndergroundMine20", floor20.NameOrUniqueName),
+									allSeasons.ToList()));
+							break;
+						}
+						case "161":
+						{
+							// UndergroundMine60
+							var floor60 = Game1.RequireLocation("UndergroundMine60");
+							fishInfo.CatchInfo.Locations
+								.Add(new SpawningCondition(
+									new LocationArea(floor60.NameOrUniqueName,"UndergroundMine60", floor60.NameOrUniqueName),
+									allSeasons.ToList()));
+							break;
+						}
+						case "162":
+						{
+							// UndergroundMine100
+							var floor100 = Game1.RequireLocation("UndergroundMine100");
+							fishInfo.CatchInfo.Locations
+								.Add(new SpawningCondition(
+									new LocationArea(floor100.NameOrUniqueName,"UndergroundMine100", floor100.NameOrUniqueName),
+									allSeasons.ToList()));
+							break;
+						}
+					}
 					fishInfo.CatchInfo.Difficulty = ParseInt(section, "Difficulty", id, defaultValue: 0);
 				}
 			}

@@ -22,6 +22,7 @@ public record LocationArea(string LocationName, string AreaName, string Location
 	{
 		var locationName = gameLocation.Name;
 		if (locationName.Equals("BeachNightMarket")) return "Beach";
+		if (locationName.StartsWith("UndergroundMine")) return "UndergroundMine";
 		return locationName;
 	}
 

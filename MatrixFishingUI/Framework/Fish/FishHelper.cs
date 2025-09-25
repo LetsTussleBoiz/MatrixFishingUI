@@ -79,27 +79,7 @@ public static class FishHelper
     {
         var locations = DataLoader.Locations(Game1.content);
         GameLocation? farm = null;
-        GameLocation? floor20 = null;
-        LocationData? floor20Data = null;
-        GameLocation? floor60 = null;
-        GameLocation? floor100 = null;
         LocationData? farmData = null;
-        
-        try
-        {
-            floor20 = Game1.RequireLocation("UndergroundMine20");
-            floor20Data = floor20.GetData();
-            if (floor20Data is null)
-            {
-                ModEntry.LogWarn("Cannot find locationData for Mine Floor 20.");
-            }
-        }
-        catch (Exception e)
-        {
-            ModEntry.LogError($"Exception thrown when attempting to find Mine Floor data: {e}");
-        }
-        
-        
         
         try
         {
@@ -328,24 +308,11 @@ public static class FishHelper
         };
     }
 
-    public static Dictionary<LocationArea, FishId[]>? GetFishByArea(GameLocation location)
+    public static Dictionary<LocationArea, List<FishId>>? GetFishByArea(GameLocation location)
     {
+        ModEntry.LogDebug($"Location NameOrUniqueName at function start: {location.NameOrUniqueName}");
         var locations = GetLocations()!;
         var locationName = LocationArea.ConvertLocationNameToDataName(location);
-        
-        if (location.NameOrUniqueName.Equals("UndergroundMine20") ||
-            location.NameOrUniqueName.Equals("UndergroundMine60") ||
-            location.NameOrUniqueName.Equals("UndergroundMine100"))
-        {
-            try
-            {
-                locationName = LocationArea.ConvertLocationNameToDataName(Game1.RequireLocation(location.NameOrUniqueName));
-            }
-            catch (Exception e)
-            {
-                ModEntry.LogError($"Error caught during UndergroundMine handling: {e}");
-            }
-        }
         
         if (!locations.TryGetValue(locationName, out var locationData)) return null;
         var fishSpawningConditions = GetFishSpawningConditions(locationData, locations["Default"], locationName);
@@ -353,7 +320,7 @@ public static class FishHelper
         return fishSpawningConditions
             .SelectMany(kv => kv.Value.Select(spawningCondition => new KeyValuePair<FishId, SpawningCondition>(kv.Key, spawningCondition)))
             .GroupBy(kv => kv.Value.Location)
-            .ToDictionary(group => group.Key, group => group.Select(kv => kv.Key).ToArray());
+            .ToDictionary(group => group.Key, group => group.Select(kv => kv.Key).ToList());
     }
     
     public static SObject GetRoeForFish(SObject fish) {

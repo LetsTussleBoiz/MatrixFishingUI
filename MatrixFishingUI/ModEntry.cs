@@ -195,10 +195,6 @@ namespace MatrixFishingUI
         
         private void ToggleHud()
         {
-            Log($"Current Location DisplayName: {Game1.currentLocation.DisplayName}");
-            Log($"Current Location ContextID: {Game1.currentLocation.locationContextId}");
-            Log($"Current Location NameOrUniqueName: {Game1.currentLocation.NameOrUniqueName}");
-            Log($"Current Location NameOrUniqueName: {Game1.currentLocation}");
             if (_hudWidget is not null)
             {
                 _hudWidget.Dispose();

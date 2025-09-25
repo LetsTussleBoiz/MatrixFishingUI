@@ -45,7 +45,6 @@ public class FishManager
         ModEntry.LogDebug($"Loaded {_fish.Count} fish from {_providers.Count} providers.");
     }
     
-    // TODO: Find alternative for refreshing fish without changing the entire dictionary (Like CatchFish mb?)
     public void RefreshFish() {
         Dictionary<FishId, FishState> working = new();
         
