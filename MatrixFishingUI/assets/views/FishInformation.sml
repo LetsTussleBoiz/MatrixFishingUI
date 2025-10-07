@@ -192,6 +192,15 @@
                                                 focusable="true"
                                                 click=|^^ViewConditions(LocationName)| />
                                         </lane>
+                                        <lane *if={:HasArea} *context={:Location}>
+                                            <image layout="32px 40px"
+                                                horizontal-alignment="middle"
+                                                vertical-alignment="middle"
+                                                sprite={@Mods/Borealis.MatrixFishingUI/Sprites/cursors:Area}
+                                                tooltip="Area Name(s)"
+                                                focusable="true"
+                                                click=|^^GetArea(LocationName)| />
+                                        </lane>
                                     </lane>
                                 </lane>
                             </lane>

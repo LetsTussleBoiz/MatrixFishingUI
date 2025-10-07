@@ -107,6 +107,9 @@
     },
     "Exclamation": {
       "SourceRect": "403, 496, 5, 14"
+    },
+    "Area": {
+      "SourceRect": "52, 372, 8, 10"
     }
   }
 }

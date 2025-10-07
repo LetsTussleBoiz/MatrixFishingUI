@@ -118,6 +118,28 @@ public partial class FishInfoData : INotifyPropertyChanged
         var context = SpecialConditionData.GetSpecialConditions(specialConditions, Fish ?? new FishInfo());
         ViewEngine.OpenChildMenu("Mods/Borealis.MatrixFishingUI/Views/SpecialConditions", context);
     }
+    
+    // ReSharper disable once UnusedMember.Global
+    public void GetArea(string locationName)
+    {
+        var areaName = "";
+        if (LocationSeasonPairs is null) return;
+        foreach (var area in LocationSeasonPairs.Where(area => area.Location.LocationName.Equals(locationName, StringComparison.OrdinalIgnoreCase)))
+        {
+            areaName = area.Location.AreaName;
+            if (area.Location.BobberPosition is not null)
+            {
+                var x = area.Location.BobberPosition.Value.X;
+                var y = area.Location.BobberPosition.Value.Y;
+                var width = area.Location.BobberPosition.Value.Width;
+                var height = area.Location.BobberPosition.Value.Height;
+                // TODO: Either give data for rectangle, or use data to draw an image of where the fish is catchable
+            }
+        }
+        if (areaName.Equals(string.Empty)) areaName = "Default";
+        var context = AreaData.GetArea(areaName, Fish ?? new FishInfo());
+        ViewEngine.OpenChildMenu("Mods/Borealis.MatrixFishingUI/Views/AreaInformation", context);
+    }
 
     // ReSharper disable once UnusedMember.Global
     public void PreviousFish()

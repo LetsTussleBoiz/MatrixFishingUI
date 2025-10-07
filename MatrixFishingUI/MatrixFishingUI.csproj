@@ -43,6 +43,9 @@
       <Content Include="assets\views\SpecialConditions.sml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <Content Update="assets\views\AreaInformation.sml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

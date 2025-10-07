@@ -201,7 +201,7 @@ public static class FishHelper
                         result[id] = spawningConditions;
                     }
 
-                    var locationArea = new LocationArea(locationName, fish.FishAreaId, locationName);
+                    var locationArea = new LocationArea(locationName, fish.FishAreaId, locationName, fish.BobberPosition ?? null);
                     if (locationArea.TryGetGameLocation(out var location))
                     {
                         locationArea = locationArea with { LocationReadableName = location.DisplayName };
@@ -361,6 +361,7 @@ public readonly struct FishId : IEquatable<FishId>
 public record SpawningCondition(LocationArea Location, List<Season> Seasons, List<string>? SpecialConditions = null)
 {
     public bool HasSpecialConditions => SpecialConditions is not null && SpecialConditions.Count > 0;
+    public bool HasArea => !Location.AreaName.Equals(string.Empty);
     
     public static bool VerifyCondition(string condition, Item? targetItem, Item? inputItem)
     {

@@ -53,6 +53,9 @@
   
   "ui.special.title": "Special Condition(s)",
   "ui.special.segment": "Condition: ",
+
+  "ui.area.title": "Location Area(s)",
+  "ui.area.segment": "Area: ",
   
   "ui.hud.labels.no_fish": "No catchable fish in current location!",
   

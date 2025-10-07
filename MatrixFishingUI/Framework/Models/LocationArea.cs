@@ -1,9 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Xna.Framework;
 using StardewValley;
 
 namespace MatrixFishingUI.Framework.Models;
 
-public record LocationArea(string LocationName, string AreaName, string LocationReadableName)
+public record LocationArea(string LocationName, string AreaName, string LocationReadableName, Rectangle? BobberPosition = null)
 {
 
 	public bool TryGetGameLocation([NotNullWhen(true)] out GameLocation? gameLocation)
